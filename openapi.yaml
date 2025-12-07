@@ -4,40 +4,45 @@ info:
   description: API для самой громкой социальной сети.
   version: 1.0.0
 servers:
-  - url: http://localhost:8080/api
+  - url: http://localhost:8084/api
     description: Local Dev Server
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
+    # --- MODEL: POST ---
     Post:
       type: object
       properties:
         id:
           type: integer
           example: 42
-          description: Уникальный ID поста
         content:
           type: string
           example: "ПОЧЕМУ КОФЕ ТАКОЙ ГОРЯЧИЙ?!"
-          description: Текст поста
         initial_volume:
           type: integer
           minimum: 0
           maximum: 120
-          example: 95
-          description: Громкость (dB) при создании. Влияет на размер шрифта.
-        current_hp:
+          description: Громкость при создании (влияет на размер шрифта).
+        support_score:
           type: integer
-          example: 850
-          description: Текущее здоровье поста. Начальное = 1000.
-        is_destroyed:
-          type: boolean
-          example: false
-          description: Если true, пост должен визуально "взорваться" и исчезнуть.
+          example: 1500
+          description: Сумма всей громкости, которую наорали другие юзеры (аналог лайков/кармы).
+        max_scream_volume:
+          type: integer
+          example: 110
+          description: Самый громкий крик, зафиксированный на этом посте (для рекордов).
         created_at:
           type: string
           format: date-time
     
+    # --- REQUEST: CREATE POST ---
     CreatePostRequest:
       type: object
       required:
@@ -47,50 +52,84 @@ components:
         content:
           type: string
           minLength: 1
-          example: "Всем привет, я только проснулся"
+          example: "Всем привет!"
         initial_volume:
           type: integer
-          minimum: 0
-          maximum: 120
-          description: Средняя громкость голоса во время записи
+          description: Средняя громкость голоса
           example: 45
 
-    ScreamDamageEvent:
+    # --- REQUEST: LOGIN ---
+    LoginRequest:
       type: object
-      description: Объект, который фронт шлет в WebSocket, когда юзер орет
+      required:
+        - username
+      properties:
+        username:
+          type: string
+          example: "MAD_MAX"
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1Ni..."
+
+    # --- WEBSOCKET EVENTS ---
+    ScreamSupportEvent:
+      type: object
+      description: "Front -> Back: Юзер орет на пост"
       properties:
         action:
           type: string
-          enum: [scream_damage]
+          enum: [scream_support]
         post_id:
           type: integer
-        damage:
+        volume:
           type: integer
-          description: Рассчитывается как (CurrentVolume - Threshold) / Coeff
+          description: Текущая громкость крика (0-120)
 
-    HealthUpdateEvent:
+    SupportUpdateEvent:
       type: object
-      description: Объект, который сервер шлет всем клиентам через WebSocket
+      description: "Back -> Front: Обновляем счетчик поддержки у всех"
       properties:
         event:
           type: string
-          enum: [hp_update]
+          enum: [support_update]
         post_id:
           type: integer
-        new_hp:
+        new_support_score:
           type: integer
-        is_destroyed:
+        is_shaking:
           type: boolean
+          description: Флаг для фронта (если score резко вырос - трясем экран)
 
-  # --- ОПИСАНИЕ ПУТЕЙ ---
+# --- PATHS ---
 paths:
+  /auth/login:
+    post:
+      summary: Вход / Регистрация
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
   /posts:
     get:
       summary: Получить ленту постов
-      description: Возвращает список "живых" постов (не уничтоженных). Сортировка - новые сверху.
+      description: Сортировка - новые сверху. (Можно добавить ?sort=loudest для сортировки по support_score)
       responses:
         '200':
-          description: Успешный список
+          description: Список постов
           content:
             application/json:
               schema:
@@ -98,8 +137,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/Post'
     post:
-      summary: Создать новый пост (Scream-to-Post)
-      description: Сохраняет пост с громкостью.
+      summary: Создать новый пост
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -108,7 +148,7 @@ paths:
               $ref: '#/components/schemas/CreatePostRequest'
       responses:
         '201':
-          description: Пост создан
+          description: Создано
           content:
             application/json:
               schema:
@@ -118,12 +158,10 @@ paths:
                     type: integer
                   status:
                     type: string
-                    example: "created"
 
   /stats/leaderboard:
     get:
-      summary: Получить топ крикунов (Phase 2)
-      description: Топ-10 юзеров по максимальной громкости.
+      summary: Топ крикунов
       responses:
         '200':
           description: Лидерборд
@@ -136,18 +174,16 @@ paths:
                   properties:
                     username:
                       type: string
-                      example: "LOUD_BOY_99"
                     max_volume:
                       type: integer
-                      example: 110
 
   /ws:
     get:
       summary: WebSocket Connection
-      description: >
-        Единая точка входа для Realtime.
-        \n**Client -> Server:** Отправляет `ScreamDamageEvent` (когда орем).
-        \n**Server -> Client:** Рассылает `HealthUpdateEvent` (когда урон прошел).
+      description: |
+        Realtime обмен криками.
+        Client -> Server: ScreamSupportEvent
+        Server -> Client: SupportUpdateEvent
       responses:
         '101':
-          description: Switching Protocols to WebSocket
+          description: Switching Protocols

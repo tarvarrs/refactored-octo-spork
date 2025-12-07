@@ -46,20 +46,14 @@ func main() {
 
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
-	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type"}
 	r.Use(cors.New(config))
 
     public := r.Group("/")
     {
         public.GET("/posts", postH.GetFeed)
-        public.POST("/auth/login", userH.Login)
+        public.POST("/posts", postH.CreatePost)
         public.GET("/stats/leaderboard", userH.GetLeaderboard) 
-    }
-
-    protected := r.Group("/")
-    protected.Use(handlers.AuthMiddleware())
-    {
-        protected.POST("/posts", postH.CreatePost) 
     }
 
 	r.GET("/ws", wsH.HandleConnection)

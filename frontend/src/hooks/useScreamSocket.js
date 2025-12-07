@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-const getWsUrl = () => {
-  const token = localStorage.getItem('scream_token');
-  if (!token) {
-    return null;
-  }
-  return `ws://localhost:8084/ws?token=${encodeURIComponent(token)}`;
-};
+const WS_URL = 'ws://localhost:8084/ws';
 
 export const useScreamSocket = (setPosts) => {
   const ws = useRef(null);
@@ -19,86 +13,62 @@ export const useScreamSocket = (setPosts) => {
   }, [setPosts]);
 
   useEffect(() => {
-    let retryCount = 0;
-    const maxRetries = 5;
+    // Если уже подключены, не подключаемся снова
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      return;
+    }
 
-    // Проверяем токен с небольшой задержкой, чтобы дать время App.js сохранить токен
-    const checkAndConnect = () => {
-      const wsUrl = getWsUrl();
-      if (!wsUrl) {
-        retryCount++;
-        if (retryCount < maxRetries) {
-          console.warn(`🔌 WS: No token found, retrying (${retryCount}/${maxRetries})...`);
-          // Повторная попытка через 1 секунду
-          setTimeout(checkAndConnect, 1000);
-        } else {
-          console.error('🔌 WS: Max retries reached, token not found');
-        }
-        return;
-      }
+    // Закрываем предыдущее соединение, если есть
+    if (ws.current) {
+      ws.current.close();
+    }
 
-      // Если уже подключены, не подключаемся снова
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        return;
-      }
+    // Подключаемся к сокету
+    const socket = new WebSocket(WS_URL);
+    ws.current = socket;
 
-      // Закрываем предыдущее соединение, если есть
-      if (ws.current) {
-        ws.current.close();
-      }
-
-      // Подключаемся к сокету
-      const socket = new WebSocket(wsUrl);
-      ws.current = socket;
-
-      socket.onopen = () => {
-        console.log('🔌 WS Connected');
-        setIsConnected(true);
-        retryCount = 0; // Сбрасываем счетчик при успешном подключении
-      };
-
-      socket.onerror = (error) => {
-        console.error('🔌 WS Error:', error);
-        setIsConnected(false);
-      };
-
-      socket.onclose = (event) => {
-        console.log('🔌 WS Disconnected', event.code, event.reason);
-        setIsConnected(false);
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-
-          // Обработка обновления счета (Server -> Client)
-          if (msg.event === 'support_update') {
-            setPostsRef.current((prevPosts) => 
-              prevPosts.map((post) => {
-                if (post.id === msg.post_id) {
-                  return {
-                    ...post,
-                    support_score: msg.new_support_score,
-                    // Флаг для анимации, если сервер сказал "тряси!"
-                    is_shaking_remote: msg.is_shaking 
-                  };
-                }
-                return post;
-              })
-            );
-          }
-        } catch (err) {
-          console.error("WS Parse Error", err);
-        }
-      };
+    socket.onopen = () => {
+      console.log('🔌 WS Connected');
+      setIsConnected(true);
     };
 
-    // Задержка перед первой попыткой подключения, чтобы дать время App.js сохранить токен
-    const timeoutId = setTimeout(checkAndConnect, 500);
+    socket.onerror = (error) => {
+      console.error('🔌 WS Error:', error);
+      setIsConnected(false);
+    };
+
+    socket.onclose = (event) => {
+      console.log('🔌 WS Disconnected', event.code, event.reason);
+      setIsConnected(false);
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+
+        // Обработка обновления счета (Server -> Client)
+        if (msg.event === 'support_update') {
+          setPostsRef.current((prevPosts) => 
+            prevPosts.map((post) => {
+              if (post.id === msg.post_id) {
+                return {
+                  ...post,
+                  support_score: msg.new_support_score,
+                  // Флаг для анимации, если сервер сказал "тряси!"
+                  is_shaking_remote: msg.is_shaking 
+                };
+              }
+              return post;
+            })
+          );
+        }
+      } catch (err) {
+        console.error("WS Parse Error", err);
+      }
+    };
 
     // Чистим при размонтировании
     return () => {
-      clearTimeout(timeoutId);
       if (ws.current) {
         ws.current.close();
       }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8084'; // Убедись, что бэкенд запущен на этом порту
+const API_BASE = 'http://localhost:8084';
 
 // Создаем инстанс axios
 const http = axios.create({
@@ -10,41 +10,19 @@ const http = axios.create({
   },
 });
 
-// Добавляем токен к каждому запросу
-http.interceptors.request.use((config) => {
-  const token = localStorage.getItem('scream_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
 export const api = {
-  // --- AUTH ---
-  login: async (username) => {
-    const { data } = await http.post('/auth/login', { username });
-    if (data.token) {
-      localStorage.setItem('scream_token', data.token);
-      localStorage.setItem('scream_username', username);
-    }
-    return data;
-  },
-
   // --- POSTS ---
   fetchPosts: async () => {
     const { data } = await http.get('/posts');
     return data;
   },
 
-  createPost: async (content, initialVolume) => {
+  createPost: async (title, description, initialVolume) => {
     const { data } = await http.post('/posts', {
-      content,
+      title,
+      description,
       initial_volume: initialVolume,
     });
     return data;
   },
-
-  // --- HELPER ---
-  isLoggedIn: () => !!localStorage.getItem('scream_token'),
-  getUsername: () => localStorage.getItem('scream_username'),
 };

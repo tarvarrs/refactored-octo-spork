@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // <--- Добавь useState
+import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAudioInput } from './hooks/useAudioInput';
 import { useScreamRecorder } from './hooks/useScreamRecorder';
@@ -6,9 +6,6 @@ import './App.css';
 import VolumeMeter from './components/VolumeMeter';
 import { FeedPage } from './pages/FeedPage';
 import { SinglePostPage } from './pages/SinglePostPage';
-import { api } from './api/client';
-
-const getRandomName = () => `Screamer_${Math.floor(Math.random() * 10000)}`;
 
 function App() {
   const {
@@ -22,23 +19,7 @@ function App() {
 
   const { isRecording, recordingTime, startRecording, stopRecording } = useScreamRecorder(volume);
   
-  // 🔥 ВОЗВРАЩАЕМ ЭТО СОСТОЯНИЕ
-  const [isFormOpen, setIsFormOpen] = useState(false); 
-
-  useEffect(() => {
-    const initAuth = async () => {
-      if (!api.isLoggedIn()) {
-        try {
-          const name = getRandomName();
-          await api.login(name);
-          console.log(`✅ Logged in as ${name}`);
-        } catch (e) {
-          console.error("Login failed", e);
-        }
-      }
-    };
-    initAuth();
-  }, []);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Компонент FeedPage с нужными пропсами
   const feedPageElement = (

@@ -1,81 +1,127 @@
 import React, { useEffect, useState } from 'react';
 import { useAudioInput } from './hooks/useAudioInput';
 import { useScreamScroll } from './hooks/useScreamScroll';
+import { useScreamRecorder } from './hooks/useScreamRecorder';
 import { api } from './api/client';
-import ScreamScrollNews from './ScreamScrollNews'; 
 import './App.css';
 import PostCard from './components/PostCard';
 import VolumeMeter from './components/VolumeMeter';
 
-const generateMockPosts = () => {
-  const titles = [
-    "КОТЫ ЗАХВАТИЛИ ВЛАСТЬ!", "Почему молчание убивает?", "БИТКОИН УПАЛ ОТ КРИКА", 
-    "Соседи вызвали полицию", "Ученые: ор продлевает жизнь", "Громкость 1000%!",
-    "Кто украл твой голос?", "Сенсация: тишина запрещена", "Как правильно орать?",
-    "Микрофон плавится"
-  ];
-  
-  return Array.from({ length: 15 }).map((_, i) => {
-    // Делаем так, чтобы первый пост был слабым, а последние - мощными
-    const baseScore = i * 80; 
-    const randomBoost = Math.floor(Math.random() * 100);
-    
-    return {
-      id: i + 1,
-      title: titles[i % titles.length] + ` #${i+1}`,
-      text: "Поддержите этот пост своим голосом! Чем громче вы кричите, тем выше он поднимается.",
-      score: baseScore + randomBoost, 
-    };
-  });
-};
-
 function App() {
+  // --- 1. ЛОГИКА АУДИО И СКРОЛЛА ---
   const { 
     volume, 
     isListening, 
-    isCalibrating, // Новый флаг
-    startCalibration, // Новая функция запуска
+    isCalibrating, 
+    startCalibration, 
     stopListening, 
     error 
   } = useAudioInput();
-  useScreamScroll(volume, isListening && !isCalibrating, 5);
+
+  // --- 2. ЛОГИКА ЗАПИСИ ПОСТА (НОВОЕ) ---
+  const { isRecording, recordingTime, startRecording, stopRecording } = useScreamRecorder(volume);
+  
+  // Скроллим только если слушаем, не калибруемся и НЕ записываем пост прямо сейчас
+  useScreamScroll(volume, isListening && !isCalibrating && !isRecording, 5);
+
+  // --- 3. ДАННЫЕ И ФОРМЫ ---
   const [posts, setPosts] = useState([]);
-  useEffect(() => {
-    const loadData = async () => {
+  const [draftText, setDraftText] = useState(""); // Текст нового поста
+  const [isFormOpen, setIsFormOpen] = useState(false); // Открыть/закрыть форму
+
+  const loadData = async () => {
+    try {
       const data = await api.fetchPosts();
       setPosts(data);
-    };
-    loadData();
-  }, []);
-  const [mockVolume, setMockVolume] = useState(0); 
-  const [posts] = useState(generateMockPosts());
+    } catch (e) {
+      console.error("Не удалось загрузить посты", e);
+    }
+  };
+
+  useEffect(() => { loadData(); }, []);
+
+  // Обработчик создания поста
+  const handlePostCreation = async () => {
+    if (!draftText.trim()) return alert("Напиши хоть слово перед тем как орать!");
+    
+    // Получаем громкость крика
+    const finalVolume = stopRecording();
+    
+    // Отправляем
+    await api.createPost(draftText, finalVolume);
+    
+    // Сброс UI
+    setDraftText("");
+    setIsFormOpen(false);
+    loadData(); // Обновляем ленту
+  };
 
   return (
     <div className="App">
       <header className="sticky-header">
-        {/* 🔥 ВОТ ЗДЕСЬ ИЗМЕНЕНИЕ: */}
-        <h1>ORALO</h1>
-        
-        <div className="dev-tools">
-          <p>🚀 Скорость: {mockVolume}%</p>
-          <input 
-            type="range" min="0" max="100" 
-            value={mockVolume} 
-            onChange={(e) => setMockVolume(Number(e.target.value))}
-            style={{ accentColor: 'var(--scream-color)', cursor: 'pointer' }}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <h1>ORALO</h1>
+          
+          {/* КНОПКА ВКЛЮЧЕНИЯ МИКРОФОНА */}
+          <button 
+            onClick={!isListening ? startCalibration : stopListening}
+            className={`mic-button ${isCalibrating ? 'calibrating' : ''} ${isListening ? 'active' : ''}`}
+          >
+            {!isListening ? '🎙️ ВКЛ' : isCalibrating ? '🤫 ТССС...' : '🛑 СТОП'}
+          </button>
         </div>
 
-        <VolumeMeter volume={mockVolume} />
+        {/* Индикатор громкости (Реальный!) */}
+        <div style={{ flex: 1, margin: '0 20px', maxWidth: '300px' }}>
+           <VolumeMeter volume={volume} />
+        </div>
+
+        {/* Кнопка создания поста */}
+        <button 
+          className="create-btn"
+          onClick={() => setIsFormOpen(!isFormOpen)}
+          disabled={!isListening || isCalibrating}
+        >
+          {isFormOpen ? '✖' : '➕ ОРАТЬ'}
+        </button>
       </header>
 
+      {/* ОШИБКИ */}
+      {error && <div className="error-banner">{error}</div>}
+
+      {/* ФОРМА СОЗДАНИЯ ПОСТА (ВЫЕЗЖАЕТ ИЛИ ПОЯВЛЯЕТСЯ) */}
+      {isFormOpen && (
+        <div className="post-creator">
+           <textarea
+             placeholder="О чем хочешь покричать?"
+             value={draftText}
+             onChange={(e) => setDraftText(e.target.value)}
+             rows={3}
+           />
+           <button
+             className={`record-btn ${isRecording ? 'recording' : ''}`}
+             onMouseDown={startRecording}
+             onMouseUp={handlePostCreation}
+             onMouseLeave={() => isRecording && stopRecording()} 
+           >
+             {isRecording ? `ГРОМЧЕ! (${recordingTime}s)` : '🎤 ЗАЖМИ И ОРИ'}
+           </button>
+        </div>
+      )}
+
       <main className="feed">
+        {posts.length === 0 && !isListening && (
+           <div className="empty-state">Включи микрофон, чтобы увидеть мир...</div>
+        )}
+
         {posts.map(post => (
           <PostCard 
             key={post.id}
-            title={post.title}
-            text={post.text}
-            score={post.score}
+            // Адаптируем поля API под пропсы компонента
+            title={`Громкость: ${post.volumeLevel}%`} // Или заголовок, если есть
+            text={post.content}
+            score={post.hp || 1000} // Если есть HP
+            volumeLevel={post.volumeLevel} // Передаем для стилизации размера
           />
         ))}
         

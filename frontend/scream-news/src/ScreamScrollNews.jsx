@@ -24,7 +24,7 @@ const ScreamScrollNews = () => {
   const rafIdRef = useRef(null);
 
   // Константы для настройки чувствительности
-  const MIN_VOLUME_THRESHOLD = 40; // Минимальная громкость (0-255) для начала скролла
+  const MIN_VOLUME_THRESHOLD = 1000; // Минимальная громкость (0-255) для начала скролла
   const SCROLL_MULTIPLIER = 0.5;   // Множитель скорости скролла
 
   const startListening = async () => {

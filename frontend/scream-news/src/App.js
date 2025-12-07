@@ -26,7 +26,7 @@ function App() {
 
   // --- 3. ДАННЫЕ И ФОРМЫ ---
   const [posts, setPosts] = useState([]);
-  const [draftText, setDraftText] = useState(""); // Текст нового поста
+  const [draftText, setDraftText] = useState(""); // Текст нового поста (будет Title)
   const [isFormOpen, setIsFormOpen] = useState(false); // Открыть/закрыть форму
 
   const loadData = async () => {
@@ -47,7 +47,7 @@ function App() {
     // Получаем громкость крика
     const finalVolume = stopRecording();
     
-    // Отправляем
+    // Отправляем: draftText -> title, description генерируется в client.js или можно передать пустой
     await api.createPost(draftText, finalVolume);
     
     // Сброс UI
@@ -93,7 +93,7 @@ function App() {
       {isFormOpen && (
         <div className="post-creator">
            <textarea
-             placeholder="О чем хочешь покричать?"
+             placeholder="Заголовок твоего крика..."
              value={draftText}
              onChange={(e) => setDraftText(e.target.value)}
              rows={3}
@@ -117,11 +117,14 @@ function App() {
         {posts.map(post => (
           <PostCard 
             key={post.id}
-            // Адаптируем поля API под пропсы компонента
-            title={`Громкость: ${post.volumeLevel}%`} // Или заголовок, если есть
-            text={post.content}
-            score={post.hp || 1000} // Если есть HP
-            volumeLevel={post.volumeLevel} // Передаем для стилизации размера
+            // ИЗМЕНЕНИЯ ЗДЕСЬ:
+            // 1. Вместо громкости теперь показываем Title
+            title={post.title} 
+            // 2. Вместо контента теперь показываем Description
+            text={post.description}
+            
+            score={post.hp || 1000} 
+            volumeLevel={post.volumeLevel} // Оставляем для расчетов стилей (если нужно внутри)
           />
         ))}
         

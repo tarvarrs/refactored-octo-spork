@@ -80,7 +80,7 @@ function App() {
         <button 
           className="create-btn"
           onClick={() => setIsFormOpen(!isFormOpen)}
-          disabled={!isListening || isCalibrating}
+          disabled={true} /* <--- ИЗМЕНЕНО: Кнопка всегда неактивна */
         >
           {isFormOpen ? '✖' : '➕ ОРАТЬ'}
         </button>
@@ -109,29 +109,32 @@ function App() {
         </div>
       )}
 
-      <main className="feed">
+<main className="feed">
+        {/* ПУСТОЕ СОСТОЯНИЕ: Стилизованная плашка */}
         {posts.length === 0 && !isListening && (
-           <div className="empty-state">Включи микрофон, чтобы увидеть мир...</div>
+           <div className="empty-state">
+             🎙️ ВКЛЮЧИ МИКРОФОН, <br/> ЧТОБЫ УСЛЫШАТЬ ЭТОТ МИР...
+           </div>
         )}
 
         {posts.map(post => (
           <PostCard 
             key={post.id}
-            // ИЗМЕНЕНИЯ ЗДЕСЬ:
-            // 1. Вместо громкости теперь показываем Title
             title={post.title} 
-            // 2. Вместо контента теперь показываем Description
             text={post.description}
-            
             score={post.hp || 1000} 
-            volumeLevel={post.volumeLevel} // Оставляем для расчетов стилей (если нужно внутри)
+            volumeLevel={post.volumeLevel}
           />
         ))}
         
-        <div style={{ textAlign: 'center', color: '#666', padding: '30px' }}>
-          📢 КОНЕЦ ЭФИРА
-        </div>
+        {/* КОНЕЦ ЛЕНТЫ: Новая надпись и стиль */}
+        {posts.length > 0 && (
+          <div className="end-of-feed">
+            ☠️ ВЫ ДОСТИГЛИ ДНА
+          </div>
+        )}
       </main>
+
     </div>
   );
 }

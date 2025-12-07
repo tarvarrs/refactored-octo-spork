@@ -1,3 +1,9 @@
+/* Добавь это в начало файла или убедись, что переменные определены */
+:root {
+  --scream-color: #ff003c; /* Неоновый красный/розовый */
+  --neon-blue: #00f3ff;    /* Неоновый голубой */
+}
+
 .App {
   min-height: 100vh;
   background: radial-gradient(circle at 50% 0%, #2a2a35 0%, #121214 60%);
@@ -49,7 +55,6 @@
   animation: neon-flicker 4s infinite alternate;
 }
 
-
 .dev-tools {
   background: #1E1E24;
   padding: 8px 16px;
@@ -69,4 +74,108 @@
   margin: 0 auto;
   padding-left: 15px;
   padding-right: 15px;
+}
+
+/* --- НОВЫЕ СТИЛИ ДЛЯ КНОПОК --- */
+.mic-button, .create-btn {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--neon-blue);
+  color: var(--neon-blue);
+  padding: 10px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--neon-blue), inset 0 0 5px var(--neon-blue);
+  text-shadow: 0 0 5px var(--neon-blue);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.mic-button:hover {
+  background: var(--neon-blue);
+  color: #000;
+  box-shadow: 0 0 20px var(--neon-blue), inset 0 0 10px var(--neon-blue);
+}
+
+/* Активное состояние микрофона (когда он включен) */
+.mic-button.active {
+  border-color: var(--scream-color);
+  color: var(--scream-color);
+  box-shadow: 0 0 10px var(--scream-color), inset 0 0 5px var(--scream-color);
+  text-shadow: 0 0 5px var(--scream-color);
+}
+
+.mic-button.active:hover {
+  background: var(--scream-color);
+  color: #fff;
+}
+
+/* Кнопка создания поста (стиль по умолчанию, если бы была активна) */
+.create-btn {
+  border-color: var(--scream-color);
+  color: var(--scream-color);
+  box-shadow: 0 0 10px var(--scream-color), inset 0 0 5px var(--scream-color);
+  text-shadow: 0 0 5px var(--scream-color);
+}
+
+/* Состояние disabled для кнопки создания */
+.create-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+  box-shadow: none;
+  border-color: #555;
+  color: #777;
+  text-shadow: none;
+}
+
+/* ... предыдущий код ... */
+
+/* --- СТИЛИ ДЛЯ ПУСТОГО СОСТОЯНИЯ (МИКРОФОН) --- */
+.empty-state {
+  margin-top: 50px;
+  padding: 40px 20px;
+  text-align: center;
+  border: 2px dashed var(--neon-blue); /* Пунктирная неоновая рамка */
+  border-radius: 12px;
+  background: rgba(0, 243, 255, 0.05); /* Едва заметная голубая подложка */
+  
+  color: var(--neon-blue);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+  
+  animation: pulse-border 3s infinite ease-in-out;
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 15px rgba(0, 243, 255, 0.1); opacity: 0.8; }
+  50% { box-shadow: 0 0 25px rgba(0, 243, 255, 0.3); opacity: 1; }
+  100% { box-shadow: 0 0 15px rgba(0, 243, 255, 0.1); opacity: 0.8; }
+}
+
+/* --- СТИЛИ ДЛЯ КОНЦА ЛЕНТЫ (ДНО) --- */
+.end-of-feed {
+  text-align: center;
+  padding: 60px 0 20px 0;
+  
+  color: #4a4a55; /* Темный, "погасший" цвет */
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  
+  /* Эффект "выжженного" текста на темном фоне */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.05);
 }

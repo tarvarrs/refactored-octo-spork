@@ -24,6 +24,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: app
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}

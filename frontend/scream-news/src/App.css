@@ -50,9 +50,20 @@
   font-size: 3rem; /* Сделали покрупнее */
   letter-spacing: 2px;
   color: #fff;
-  
+
   /* Магия неона */
   animation: neon-flicker 4s infinite alternate;
+}
+
+/* КОНТЕЙНЕР ДЛЯ КНОПОК СПРАВА */
+.header-controls-right {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .dev-tools {
@@ -137,8 +148,6 @@
   text-shadow: none;
 }
 
-/* ... предыдущий код ... */
-
 /* --- СТИЛИ ДЛЯ ПУСТОГО СОСТОЯНИЯ (МИКРОФОН) --- */
 .empty-state {
   margin-top: 50px;
@@ -147,16 +156,13 @@
   border: 2px dashed var(--neon-blue); /* Пунктирная неоновая рамка */
   border-radius: 12px;
   background: rgba(0, 243, 255, 0.05); /* Едва заметная голубая подложка */
-  
   color: var(--neon-blue);
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
   font-size: 1.2rem;
   letter-spacing: 1px;
-  
   box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
   text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
-  
   animation: pulse-border 3s infinite ease-in-out;
 }
 
@@ -166,18 +172,264 @@
   100% { box-shadow: 0 0 15px rgba(0, 243, 255, 0.1); opacity: 0.8; }
 }
 
-/* --- СТИЛИ ДЛЯ КОНЦА ЛЕНТЫ (ДНО) --- */
+/* --- СТИЛИ ДЛЯ КОНЦА ЛЕНТЫ (ДНО) С БЕГУЩЕЙ СТРОКОЙ --- */
 .end-of-feed {
   text-align: center;
-  padding: 60px 0 20px 0;
-  
-  color: #4a4a55; /* Темный, "погасший" цвет */
+  padding: 40px 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Контейнер бегущей строки - 2/3 от ширины */
+.marquee-container {
+  width: 66.66%;
+  margin: 0 auto;
+  overflow: hidden;
+  background: rgba(255, 0, 60, 0.1);
+  border: 1px solid var(--scream-color);
+  border-radius: 4px;
+  padding: 10px 0;
+}
+
+.marquee-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 10s linear infinite;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 4px;
+  color: var(--scream-color);
+  text-shadow: 0 0 10px var(--scream-color);
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.end-text {
+  color: #4a4a55;
   font-family: 'Montserrat', sans-serif;
   font-weight: 800;
   font-size: 1rem;
   letter-spacing: 6px;
   text-transform: uppercase;
-  
-  /* Эффект "выжженного" текста на темном фоне */
   text-shadow: 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ========================================
+   СТРЕСС-СЛАЙДЕР СПРАВА (SIDEBAR)
+   ======================================== */
+
+.stress-slider-sidebar {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.stress-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--neon-blue);
+  text-align: center;
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+  opacity: 0.9;
+  line-height: 1.3;
+}
+
+.stress-slider-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+/* Стилизация самого слайдера - ВЕРТИКАЛЬНАЯ */
+.stress-slider {
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  writing-mode: bt-lr; /* IE */
+  -webkit-writing-mode: bt-lr;
+  writing-mode: vertical-rl;
+  width: 8px;
+  height: 150px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to top,
+    var(--slider-color) 0%,
+    var(--slider-color) calc(var(--slider-value) * 1%),
+    rgba(255, 255, 255, 0.1) calc(var(--slider-value) * 1%),
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  outline: none;
+  cursor: grab;
+  transition: all 0.15s ease;
+  box-shadow: 
+    0 0 10px rgba(0, 243, 255, 0.3),
+    inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.stress-slider:active {
+  cursor: grabbing;
+}
+
+/* Ползунок (thumb) */
+.stress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--slider-color);
+  cursor: grab;
+  border: 3px solid rgba(0, 0, 0, 0.8);
+  box-shadow: 
+    0 0 15px var(--slider-color),
+    0 0 25px var(--slider-color),
+    inset 0 0 5px rgba(255, 255, 255, 0.5);
+  transition: all 0.15s ease;
+}
+
+.stress-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--slider-color);
+  cursor: grab;
+  border: 3px solid rgba(0, 0, 0, 0.8);
+  box-shadow: 
+    0 0 15px var(--slider-color),
+    0 0 25px var(--slider-color),
+    inset 0 0 5px rgba(255, 255, 255, 0.5);
+  transition: all 0.15s ease;
+}
+
+/* Эффекты при перетаскивании */
+.stress-slider.dragging::-webkit-slider-thumb {
+  transform: scale(1.3);
+  box-shadow: 
+    0 0 25px var(--slider-color),
+    0 0 40px var(--slider-color),
+    inset 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.stress-slider.dragging::-moz-range-thumb {
+  transform: scale(1.3);
+  box-shadow: 
+    0 0 25px var(--slider-color),
+    0 0 40px var(--slider-color),
+    inset 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.stress-slider.dragging {
+  box-shadow: 
+    0 0 20px var(--slider-color),
+    inset 0 0 8px rgba(0, 0, 0, 0.7);
+}
+
+/* Дополнительные стили для post-creator и error-banner если нужны */
+.post-creator {
+  position: fixed;
+  top: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 500px;
+  background: rgba(18, 18, 20, 0.98);
+  border: 2px solid var(--scream-color);
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 1001;
+  box-shadow: 0 20px 60px rgba(255, 0, 60, 0.3);
+}
+
+.post-creator textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--neon-blue);
+  color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  resize: none;
+  margin-bottom: 15px;
+}
+
+.post-creator textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.record-btn {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--scream-color);
+  color: var(--scream-color);
+  padding: 15px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--scream-color), inset 0 0 5px var(--scream-color);
+  text-shadow: 0 0 5px var(--scream-color);
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.record-btn:hover {
+  background: var(--scream-color);
+  color: #fff;
+}
+
+.record-btn.recording {
+  background: var(--scream-color);
+  color: #fff;
+  animation: pulse-record 0.5s infinite;
+}
+
+@keyframes pulse-record {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--scream-color), inset 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px var(--scream-color), inset 0 0 20px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.error-banner {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 0, 60, 0.9);
+  color: #fff;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  z-index: 2000;
+  box-shadow: 0 10px 40px rgba(255, 0, 60, 0.5);
 }

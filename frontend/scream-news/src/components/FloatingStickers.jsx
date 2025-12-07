@@ -16,7 +16,7 @@ const STICKERS = [
   sticker5, sticker6, sticker7, sticker8
 ];
 
-function FloatingStickers() {
+function FloatingStickers({ isPaused = false }) {
   const [stickers, setStickers] = useState([]);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ function FloatingStickers() {
   }, []);
 
   return (
-    <div className="floating-stickers-container">
+    <div className={`floating-stickers-container ${isPaused ? 'paused' : ''}`}>
       {stickers.map((sticker) => (
         <img
           key={sticker.id}

@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"oralo/internal/usecase"
+	"github.com/golang-jwt/jwt/v5"
+	"os"
 )
 
 var upgrader = websocket.Upgrader{
@@ -19,7 +21,7 @@ var upgrader = websocket.Upgrader{
 type WsHandler struct {
 	postUC usecase.PostUseCase
 	clients map[*websocket.Conn]bool
-	broadcast chan []byte // Канал для рассылки сообщений
+	broadcast chan []byte 
 }
 
 func NewWsHandler(postUC usecase.PostUseCase) *WsHandler {
@@ -34,6 +36,21 @@ func NewWsHandler(postUC usecase.PostUseCase) *WsHandler {
 
 // GET /ws
 func (h *WsHandler) HandleConnection(c *gin.Context) {
+	tokenString := c.Query("token")
+	if tokenString == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Token required"})
+		return
+	}
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	})
+
+	if err != nil || !token.Valid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println("WS Upgrade error:", err)

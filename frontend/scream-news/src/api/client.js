@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8084/api'; // Убедись, что бэкенд запущен на этом порту
+const API_BASE = 'http://172.20.48.1:8084'; // Убедись, что бэкенд запущен на этом порту
 
 // Создаем инстанс axios
 const http = axios.create({

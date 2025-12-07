@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // <--- Добавь useState
 import { Routes, Route } from 'react-router-dom';
 import { useAudioInput } from './hooks/useAudioInput';
 import { useScreamRecorder } from './hooks/useScreamRecorder';
@@ -6,7 +6,6 @@ import './App.css';
 import VolumeMeter from './components/VolumeMeter';
 import { FeedPage } from './pages/FeedPage';
 import { SinglePostPage } from './pages/SinglePostPage';
-import { useEffect } from 'react'
 import { api } from './api/client';
 
 const getRandomName = () => `Screamer_${Math.floor(Math.random() * 10000)}`;
@@ -22,6 +21,9 @@ function App() {
   } = useAudioInput();
 
   const { isRecording, recordingTime, startRecording, stopRecording } = useScreamRecorder(volume);
+  
+  // 🔥 ВОЗВРАЩАЕМ ЭТО СОСТОЯНИЕ
+  const [isFormOpen, setIsFormOpen] = useState(false); 
 
   useEffect(() => {
     const initAuth = async () => {
@@ -43,7 +45,6 @@ function App() {
       <header className="sticky-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <h1>ORALO</h1>
-
           <button
             onClick={!isListening ? startCalibration : stopListening}
             className={`mic-button ${isCalibrating ? 'calibrating' : ''} ${isListening ? 'active' : ''}`}
@@ -60,7 +61,7 @@ function App() {
         <button 
           className="create-btn"
           onClick={() => setIsFormOpen(!isFormOpen)}
-          disabled={true} /* <--- ИЗМЕНЕНО: Кнопка всегда неактивна */
+          disabled={isRecording || isCalibrating} // <--- Теперь кнопка активна если есть микрофон
         >
           {isFormOpen ? '✖' : '➕ ОРАТЬ'}
         </button>
@@ -68,7 +69,6 @@ function App() {
 
       {error && <div className="error-banner">{error}</div>}
 
-      {/* Роуты: на главной — скроллим, на посте — кричим на пост */}
       <Routes>
         <Route
           path="/"
@@ -77,7 +77,16 @@ function App() {
               volume={volume}
               isListening={isListening}
               isCalibrating={isCalibrating}
+              
+              // Передаем всё что нужно для записи поста в FeedPage
               isRecording={isRecording}
+              startRecording={startRecording} // <--- Нужно передать
+              stopRecording={stopRecording}   // <--- Нужно передать
+              recordingTime={recordingTime}   // <--- Нужно передать
+              
+              // Передаем состояние формы
+              isFormOpen={isFormOpen}
+              setIsFormOpen={setIsFormOpen}
             />
           }
         />

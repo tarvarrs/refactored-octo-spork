@@ -4,28 +4,29 @@ import (
 	"context"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"oralo/internal/entity"
+	"oralo/internal/models"
 	"oralo/internal/usecase"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
-type UserUseCaseImpl struct {
+type Usecase struct {
 	repo      usecase.UserRepo
 	jwtSecret []byte
 }
 
-func NewUserUseCase(r usecase.UserRepo, secret string) *UserUseCaseImpl {
-	return &UserUseCaseImpl{
+func NewUserUseCase(r usecase.UserRepo, secret string) *Usecase {
+	return &Usecase{
 		repo:      r,
 		jwtSecret: []byte(secret),
 	}
 }
 
-func (uc *UserUseCaseImpl) RegisterOrLogin(ctx context.Context, username string) (string, error) {
+func (uc *Usecase) RegisterOrLogin(ctx context.Context, username string) (string, error) {
 	user, err := uc.repo.GetByUsername(ctx, username)
 
 	if err != nil {
-		newUser := &entity.User{
+		newUser := &models.User{
 			Username:     username,
 			TotalScreams: 0,
 		}
@@ -52,10 +53,10 @@ func (uc *UserUseCaseImpl) RegisterOrLogin(ctx context.Context, username string)
 	return tokenString, nil
 }
 
-func (uc *UserUseCaseImpl) GetLeaderboard(ctx context.Context) ([]entity.User, error) {
+func (uc *Usecase) GetLeaderboard(ctx context.Context) ([]models.User, error) {
 	return uc.repo.GetTopScreamers(ctx, 10)
 }
 
-func (uc *UserUseCaseImpl) GetProfile(ctx context.Context, username string) (*entity.User, error) {
+func (uc *Usecase) GetProfile(ctx context.Context, username string) (*models.User, error) {
 	return uc.repo.GetByUsername(ctx, username)
 }

@@ -159,7 +159,12 @@ export const FeedPage = ({
       {loading && <p>Загрузка постов...</p>}
       {error && <p style={{ color: 'red' }}>Ошибка: {error}</p>}
       {!loading && !error && posts.length === 0 && (
-        <div className="empty-state">Тишина...</div>
+        <div className="empty-state">
+          <p>Тишина...</p>
+          <p style={{ marginTop: '20px', fontSize: '1rem', opacity: 0.8 }}>
+            Подергай чтобы снять напряжение
+          </p>
+        </div>
       )}
 
       {!loading && !error && posts.map(post => (

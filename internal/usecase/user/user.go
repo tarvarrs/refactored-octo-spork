@@ -15,7 +15,7 @@ type Usecase struct {
 	jwtSecret []byte
 }
 
-func NewUserUseCase(r usecase.UserRepo, secret string) *Usecase {
+func NewUsecase(r usecase.UserRepo, secret string) *Usecase {
 	return &Usecase{
 		repo:      r,
 		jwtSecret: []byte(secret),

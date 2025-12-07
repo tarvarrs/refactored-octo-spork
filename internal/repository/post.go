@@ -32,10 +32,9 @@ func (r *PostRepo) Update(ctx context.Context, post *models.Post) error {
 }
 
 func (r *PostRepo) GetAllActive(ctx context.Context) ([]models.Post, error) {
-	var posts []models.Post
-	err := r.db.WithContext(ctx).
-		Where("is_destroyed = ?", false).
-		Order("created_at desc").
-		Find(&posts).Error
-	return posts, err
+    var posts []models.Post
+    err := r.db.WithContext(ctx).
+        Order("created_at desc").
+        Find(&posts).Error
+    return posts, err
 }

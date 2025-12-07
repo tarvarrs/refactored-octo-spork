@@ -9,7 +9,6 @@ servers:
 
 components:
   schemas:
-    # --- МОДЕЛИ ДАННЫХ ---
     Post:
       type: object
       properties:

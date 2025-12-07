@@ -4,7 +4,7 @@ export const useAudioInput = () => {
   const [isListening, setIsListening] = useState(false);
   const [isCalibrating, setIsCalibrating] = useState(false); // Флаг калибровки
   const [volume, setVolume] = useState(0);
-  const [noiseFloor, setNoiseFloor] = useState(10); // Шум комнаты (по дефолту 10)
+  const [noiseFloor, setNoiseFloor] = useState(20); // Шум комнаты (по дефолту 10)
   const [error, setError] = useState(null);
 
   const audioContextRef = useRef(null);

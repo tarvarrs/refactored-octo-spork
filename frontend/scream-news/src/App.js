@@ -6,6 +6,8 @@ import { api } from './api/client';
 import './App.css';
 import PostCard from './components/PostCard';
 import VolumeMeter from './components/VolumeMeter';
+import FloatingStickers from './components/FloatingStickers'; // ← ДОБАВЬ ЭТУ СТРОКУ
+
 
 function App() {
   // --- 1. ЛОГИКА АУДИО И СКРОЛЛА ---
@@ -58,6 +60,7 @@ function App() {
 
   return (
     <div className="App">
+      <FloatingStickers />
       <header className="sticky-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <h1>ORALO</h1>

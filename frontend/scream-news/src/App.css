@@ -68,6 +68,8 @@
 }
 
 .feed {
+  position: relative;  /* ← ДОБАВЬ */
+  z-index: 1;          /* ← ДОБАВЬ */
   padding-top: 260px;
   padding-bottom: 100px;
   max-width: 500px;

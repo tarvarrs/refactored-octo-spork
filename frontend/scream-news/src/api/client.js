@@ -1,35 +1,50 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8084/api';
+const API_BASE = 'http://localhost:8084/api'; // Убедись, что бэкенд запущен на этом порту
 
-const getMockPosts = () => {
-  return [
-    { id: 1, content: "ТИШИНА В БИБЛИОТЕКЕ!", volumeLevel: 95, hp: 100 },
-    { id: 2, content: "Я просто шепнул...", volumeLevel: 10, hp: 800 },
-    { id: 3, content: "СРОЧНЫЕ НОВОСТИ", volumeLevel: 60, hp: 500 },
-  ];
-};
+// Создаем инстанс axios
+const http = axios.create({
+  baseURL: API_BASE,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Добавляем токен к каждому запросу
+http.interceptors.request.use((config) => {
+  const token = localStorage.getItem('scream_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export const api = {
-  // Получить посты
-  fetchPosts: async () => {
-    try {
-      // Пока бэк не работает, раскомментируй следующую строку:
-      return getMockPosts(); 
-      
-    //   const response = await axios.get(`${API_URL}/posts`);
-    //   return response.data;
-    } catch (error) {
-      console.warn("Бэк недоступен, отдаю моки");
-      return getMockPosts();
+  // --- AUTH ---
+  login: async (username) => {
+    const { data } = await http.post('/auth/login', { username });
+    if (data.token) {
+      localStorage.setItem('scream_token', data.token);
+      localStorage.setItem('scream_username', username);
     }
+    return data;
   },
 
-  // Отправить пост
-  createPost: async (content, volumeLevel) => {
-    return axios.post(`${API_URL}/posts`, { 
-      content, 
-      initial_volume: volumeLevel 
+  // --- POSTS ---
+  fetchPosts: async () => {
+    const { data } = await http.get('/posts');
+    return data;
+  },
+
+  createPost: async (content, initialVolume) => {
+    const { data } = await http.post('/posts', {
+      content,
+      initial_volume: initialVolume,
     });
-  }
+    return data;
+  },
+
+  // --- HELPER ---
+  isLoggedIn: () => !!localStorage.getItem('scream_token'),
+  getUsername: () => localStorage.getItem('scream_username'),
 };

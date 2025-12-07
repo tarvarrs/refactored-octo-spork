@@ -1,69 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { useAudioInput } from './hooks/useAudioInput';
-import { useScreamScroll } from './hooks/useScreamScroll';
 import { useScreamRecorder } from './hooks/useScreamRecorder';
-import { api } from './api/client';
 import './App.css';
-import PostCard from './components/PostCard';
 import VolumeMeter from './components/VolumeMeter';
+import { FeedPage } from './pages/FeedPage';
+import { SinglePostPage } from './pages/SinglePostPage';
+import { useEffect } from 'react'
+import { api } from './api/client';
+
+const getRandomName = () => `Screamer_${Math.floor(Math.random() * 10000)}`;
 
 function App() {
-  // --- 1. ЛОГИКА АУДИО И СКРОЛЛА ---
-  const { 
-    volume, 
-    isListening, 
-    isCalibrating, 
-    startCalibration, 
-    stopListening, 
-    error 
+  const {
+    volume,
+    isListening,
+    isCalibrating,
+    startCalibration,
+    stopListening,
+    error,
   } = useAudioInput();
 
-  // --- 2. ЛОГИКА ЗАПИСИ ПОСТА (НОВОЕ) ---
   const { isRecording, recordingTime, startRecording, stopRecording } = useScreamRecorder(volume);
-  
-  // Скроллим только если слушаем, не калибруемся и НЕ записываем пост прямо сейчас
-  useScreamScroll(volume, isListening && !isCalibrating && !isRecording, 5);
 
-  // --- 3. ДАННЫЕ И ФОРМЫ ---
-  const [posts, setPosts] = useState([]);
-  const [draftText, setDraftText] = useState(""); // Текст нового поста
-  const [isFormOpen, setIsFormOpen] = useState(false); // Открыть/закрыть форму
-
-  const loadData = async () => {
-    try {
-      const data = await api.fetchPosts();
-      setPosts(data);
-    } catch (e) {
-      console.error("Не удалось загрузить посты", e);
-    }
-  };
-
-  useEffect(() => { loadData(); }, []);
-
-  // Обработчик создания поста
-  const handlePostCreation = async () => {
-    if (!draftText.trim()) return alert("Напиши хоть слово перед тем как орать!");
-    
-    // Получаем громкость крика
-    const finalVolume = stopRecording();
-    
-    // Отправляем
-    await api.createPost(draftText, finalVolume);
-    
-    // Сброс UI
-    setDraftText("");
-    setIsFormOpen(false);
-    loadData(); // Обновляем ленту
-  };
+  useEffect(() => {
+    const initAuth = async () => {
+      if (!api.isLoggedIn()) {
+        try {
+          const name = getRandomName();
+          await api.login(name);
+          console.log(`✅ Logged in as ${name}`);
+        } catch (e) {
+          console.error("Login failed", e);
+        }
+      }
+    };
+    initAuth();
+  }, []);
 
   return (
     <div className="App">
       <header className="sticky-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <h1>ORALO</h1>
-          
-          {/* КНОПКА ВКЛЮЧЕНИЯ МИКРОФОНА */}
-          <button 
+
+          <button
             onClick={!isListening ? startCalibration : stopListening}
             className={`mic-button ${isCalibrating ? 'calibrating' : ''} ${isListening ? 'active' : ''}`}
           >
@@ -71,64 +52,36 @@ function App() {
           </button>
         </div>
 
-        {/* Индикатор громкости (Реальный!) */}
         <div style={{ flex: 1, margin: '0 20px', maxWidth: '300px' }}>
-           <VolumeMeter volume={volume} />
+          <VolumeMeter volume={volume} />
         </div>
-
-        {/* Кнопка создания поста */}
-        <button 
-          className="create-btn"
-          onClick={() => setIsFormOpen(!isFormOpen)}
-          disabled={!isListening || isCalibrating}
-        >
-          {isFormOpen ? '✖' : '➕ ОРАТЬ'}
-        </button>
       </header>
 
-      {/* ОШИБКИ */}
       {error && <div className="error-banner">{error}</div>}
 
-      {/* ФОРМА СОЗДАНИЯ ПОСТА (ВЫЕЗЖАЕТ ИЛИ ПОЯВЛЯЕТСЯ) */}
-      {isFormOpen && (
-        <div className="post-creator">
-           <textarea
-             placeholder="О чем хочешь покричать?"
-             value={draftText}
-             onChange={(e) => setDraftText(e.target.value)}
-             rows={3}
-           />
-           <button
-             className={`record-btn ${isRecording ? 'recording' : ''}`}
-             onMouseDown={startRecording}
-             onMouseUp={handlePostCreation}
-             onMouseLeave={() => isRecording && stopRecording()} 
-           >
-             {isRecording ? `ГРОМЧЕ! (${recordingTime}s)` : '🎤 ЗАЖМИ И ОРИ'}
-           </button>
-        </div>
-      )}
-
-      <main className="feed">
-        {posts.length === 0 && !isListening && (
-           <div className="empty-state">Включи микрофон, чтобы увидеть мир...</div>
-        )}
-
-        {posts.map(post => (
-          <PostCard 
-            key={post.id}
-            // Адаптируем поля API под пропсы компонента
-            title={`Громкость: ${post.volumeLevel}%`} // Или заголовок, если есть
-            text={post.content}
-            score={post.hp || 1000} // Если есть HP
-            volumeLevel={post.volumeLevel} // Передаем для стилизации размера
-          />
-        ))}
-        
-        <div style={{ textAlign: 'center', color: '#666', padding: '30px' }}>
-          📢 КОНЕЦ ЭФИРА
-        </div>
-      </main>
+      {/* Роуты: на главной — скроллим, на посте — кричим на пост */}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <FeedPage
+              volume={volume}
+              isListening={isListening}
+              isCalibrating={isCalibrating}
+              isRecording={isRecording}
+            />
+          }
+        />
+        <Route
+          path="/post/:id"
+          element={
+            <SinglePostPage
+              volume={volume}
+              isListening={isListening}
+            />
+          }
+        />
+      </Routes>
     </div>
   );
 }

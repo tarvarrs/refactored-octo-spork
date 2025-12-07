@@ -1,0 +1,51 @@
+.post-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.1s ease;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .hp-badge {
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+  
+  .hp-bar {
+    height: 4px;
+    background: #eee;
+    margin-top: 10px;
+    border-radius: 2px;
+  }
+  
+  .hp-fill {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s;
+  }
+  
+  /* Анимация тряски при получении урона */
+  @keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+  }
+  
+  .shaking {
+    animation: shake 0.5s;
+    border: 2px solid red; /* Подсветка урона */
+  }
+  

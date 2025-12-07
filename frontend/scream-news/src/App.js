@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAudioInput } from './hooks/useAudioInput';
 import { useScreamScroll } from './hooks/useScreamScroll';
+import { useScreamRecorder } from './hooks/useScreamRecorder';
 import { api } from './api/client';
 import ScreamScrollNews from './ScreamScrollNews'; 
 
@@ -13,49 +14,93 @@ function App() {
     stopListening, 
     error 
   } = useAudioInput();
-  useScreamScroll(volume, isListening && !isCalibrating, 5);
+  const { isRecording, recordingTime, startRecording, stopRecording } = useScreamRecorder(volume);
+  useScreamScroll(volume, isListening && !isCalibrating && !isRecording, 5);
   const [posts, setPosts] = useState([]);
-  useEffect(() => {
-    const loadData = async () => {
-      const data = await api.fetchPosts();
-      setPosts(data);
-    };
+  const [draftText, setDraftText] = useState("");
+  
+  const loadData = async () => {
+    const data = await api.fetchPosts();
+    setPosts(data);
+  }
+
+  useEffect(() => { loadData(); }, []);
+
+  const handlePostCreation = async () => {
+    if (!draftText.trim()) return alert("Напиши хоть что-то!");
+    
+    const finalVolume = stopRecording();
+    
+    await api.createPost(draftText, finalVolume);
+    
+    setDraftText("");
     loadData();
-  }, []);
+    alert(`Пост создан! Громкость (размер): ${finalVolume}%`);
+  };
+
   return (
-    <div className="App" style={{ padding: 20 }}>
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, background: '#222', color: 'white', padding: 15, zIndex: 9999, display: 'flex', justifyContent: 'space-between' }}>
-        
-        <div>
-          {/* Логика кнопки меняется в зависимости от статуса */}
-          {!isListening ? (
-            <button onClick={startCalibration} style={{ padding: '10px 20px', background: '#0f0' }}>
-              НАЧАТЬ (Калибровка)
-            </button>
-          ) : isCalibrating ? (
-            <span style={{ color: 'yellow', fontWeight: 'bold' }}>🤫 ТССС! ИЗМЕРЯЕМ ТИШИНУ...</span>
-          ) : (
-            <button onClick={stopListening} style={{ padding: '10px 20px', background: 'red', color: 'white' }}>
-              СТОП
-            </button>
-          )}
+    <div className="App" style={{ padding: 20, paddingBottom: 500 }}>
+      {/* ПАНЕЛЬ УПРАВЛЕНИЯ */}
+      <div style={{ position: 'sticky', top: 0, background: '#222', color: 'white', padding: 15, zIndex: 9999, borderBottom: '2px solid red' }}>
+        <div style={{display:'flex', justifyContent:'space-between', marginBottom: 10}}>
+           <div>
+             {!isListening ? (
+               <button onClick={startCalibration} style={{background: '#0f0'}}>ВКЛ МИКРОФОН</button>
+             ) : isCalibrating ? (
+               <span>🤫 КАЛИБРОВКА...</span>
+             ) : (
+               <span>🟢 МИКРОФОН АКТИВЕН (Шум: {volume}%)</span>
+             )}
+           </div>
         </div>
 
-        <div>Volume: {volume}%</div>
+        {/* ФОРМА СОЗДАНИЯ ПОСТА */}
+        {isListening && !isCalibrating && (
+          <div style={{ background: '#333', padding: 10, marginTop: 10 }}>
+            <input 
+              type="text" 
+              placeholder="Напиши текст и ЗАЖМИ кнопку..." 
+              value={draftText}
+              onChange={(e) => setDraftText(e.target.value)}
+              style={{ width: '70%', padding: 5 }}
+            />
+            
+            {/* Кнопка с логикой зажатия */}
+            <button
+              onMouseDown={startRecording}
+              onMouseUp={handlePostCreation}
+              onMouseLeave={() => isRecording && stopRecording()} // Если увел мышку
+              style={{ 
+                marginLeft: 10, 
+                padding: '5px 15px',
+                background: isRecording ? 'red' : '#ddd',
+                color: isRecording ? 'white' : 'black',
+                fontWeight: 'bold'
+              }}
+            >
+              {isRecording ? `ОРЁМ! ${recordingTime}s` : 'УДЕРЖИВАЙ И ОРИ'}
+            </button>
+          </div>
+        )}
       </div>
-      
-      {error && <div style={{ color: 'red', marginTop: 60 }}>{error}</div>}
 
-      <div style={{ marginTop: 100 }}>
+      {/* ЛЕНТА */}
+      <div style={{ marginTop: 20 }}>
         {posts.map(post => (
-           <div key={post.id} style={{ border: '1px solid #ccc', margin: '10px 0', padding: 20 }}>
-             <h3>{post.content}</h3>
-             <small>Громкость поста: {post.volumeLevel}</small>
+           <div key={post.id} style={{ 
+             border: '1px solid #ccc', 
+             margin: '20px 0', 
+             padding: 20,
+             // Здесь магия: размер шрифта зависит от громкости при создании!
+             fontSize: `${Math.max(12, post.volumeLevel)}px`, 
+             fontWeight: post.volumeLevel > 80 ? 'bold' : 'normal',
+             color: post.volumeLevel > 80 ? 'red' : 'black'
+           }}>
+             {post.content}
+             <div style={{fontSize: 12, color: 'gray', marginTop: 5}}>
+                Power: {post.volumeLevel}%
+             </div>
            </div>
-        ))}
-        {/* Добавим много текста чтобы было куда скроллить */}
-        {Array.from({length: 20}).map((_, i) => (
-            <div key={i} style={{height: 100, background: '#eee', margin: 10}}>Пустое место {i}</div>
         ))}
       </div>
     </div>

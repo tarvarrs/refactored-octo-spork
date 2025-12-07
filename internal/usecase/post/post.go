@@ -15,18 +15,19 @@ func NewUsecase(r usecase.PostRepo) *Usecase {
 	return &Usecase{repo: r}
 }
 
-func (uc *Usecase) CreatePost(ctx context.Context, content string, volume int, userID uint) (*models.Post, error) {
+func (uc *Usecase) CreatePost(ctx context.Context, description string, title string, volume int, userID uint) (*models.Post, error) {
 	if volume < 0 {
 		return nil, errors.New("volume cannot be negative")
 	}
 	if volume > 120 {
-		volume = 120 
+		volume = 120
 	}
 
 	post := &models.Post{
-		Content:         content,
+		Title:         title,
+		Description: description,
 		InitialVolume:   volume,
-		SupportScore:    0, 
+		SupportScore:    0,
 		MaxScreamVolume: 0,
 		UserID:          userID,
 	}
@@ -37,7 +38,6 @@ func (uc *Usecase) CreatePost(ctx context.Context, content string, volume int, u
 
 	return post, nil
 }
-
 
 func (uc *Usecase) ScreamAtPost(ctx context.Context, postID uint, volume int) (*models.Post, error) {
 	post, err := uc.repo.GetByID(ctx, postID)
@@ -55,4 +55,8 @@ func (uc *Usecase) ScreamAtPost(ctx context.Context, postID uint, volume int) (*
 
 func (uc *Usecase) GetFeed(ctx context.Context) ([]models.Post, error) {
 	return uc.repo.GetAllActive(ctx)
+}
+
+func (uc *Usecase) GetPostByID(ctx context.Context, id uint) (*models.Post, error) {
+    return uc.repo.GetByID(ctx, id)
 }

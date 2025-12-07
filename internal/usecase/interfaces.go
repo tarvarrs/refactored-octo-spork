@@ -9,7 +9,7 @@ type PostRepo interface {
 	Create(ctx context.Context, post *models.Post) error
 	GetByID(ctx context.Context, id uint) (*models.Post, error)
 	GetAllActive(ctx context.Context) ([]models.Post, error)
-	Update(ctx context.Context, post *models.Post) error 
+	Update(ctx context.Context, post *models.Post) error
 }
 
 type UserRepo interface {
@@ -18,11 +18,11 @@ type UserRepo interface {
 	GetTopScreamers(ctx context.Context, limit int) ([]models.User, error)
 }
 
-
 type PostUseCase interface {
-	CreatePost(ctx context.Context, content string, volume int, userID uint) (*models.Post, error)
+	CreatePost(ctx context.Context, description string, title string, volume int, userID uint) (*models.Post, error)
 	GetFeed(ctx context.Context) ([]models.Post, error)
 	ScreamAtPost(ctx context.Context, postID uint, volume int) (*models.Post, error)
+	GetPostByID(ctx context.Context, id uint) (*models.Post, error)
 }
 
 type AuthUseCase interface {

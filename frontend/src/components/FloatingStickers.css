@@ -1,0 +1,54 @@
+/* FloatingStickers.css */
+
+.floating-stickers-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Стикеры не блокируют клики */
+  z-index: 0; /* На заднем плане */
+  overflow: hidden;
+}
+
+.floating-sticker {
+  position: absolute;
+  object-fit: contain;
+  animation: float-animation infinite ease-in-out;
+  filter: drop-shadow(0 0 10px rgba(255, 0, 60, 0.3));
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Основная анимация плавания */
+@keyframes float-animation {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translate(var(--float-x), calc(var(--float-y) * 0.5)) rotate(5deg) scale(1.1);
+  }
+  50% {
+    transform: translate(calc(var(--float-x) * -0.5), var(--float-y)) rotate(-3deg) scale(0.9);
+  }
+  75% {
+    transform: translate(calc(var(--float-x) * 0.8), calc(var(--float-y) * 0.7)) rotate(7deg) scale(1.05);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+}
+
+/* Дополнительно: эффект пульсации для некоторых стикеров */
+.floating-sticker:nth-child(3n) {
+  animation-name: float-animation, pulse-glow;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(255, 0, 60, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.5));
+  }
+}

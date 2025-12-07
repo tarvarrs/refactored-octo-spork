@@ -4,6 +4,8 @@ import { useAudioInput } from './hooks/useAudioInput';
 import { useScreamRecorder } from './hooks/useScreamRecorder';
 import './App.css';
 import VolumeMeter from './components/VolumeMeter';
+import FloatingStickers from './components/FloatingStickers'; // ← ДОБАВЬ ЭТУ СТРОКУ
+
 import { FeedPage } from './pages/FeedPage';
 import { SinglePostPage } from './pages/SinglePostPage';
 
@@ -38,6 +40,7 @@ function App() {
 
   return (
     <div className="App">
+      <FloatingStickers />
       <header className="sticky-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <h1>ORALO</h1>

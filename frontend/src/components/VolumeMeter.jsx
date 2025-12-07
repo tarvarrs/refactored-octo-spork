@@ -9,8 +9,10 @@ const VolumeMeter = ({ volume = 0 }) => {
     <div className="volume-meter-container">
       <div className="volume-label">
         <span>Микрофон</span>
+        <span className="separator">|</span>
         <span>{Math.round(safeVolume)}%</span>
       </div>
+
       <div className="meter-track">
         <div 
           className="meter-fill" 

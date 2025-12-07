@@ -1,3 +1,95 @@
+/* === ДИНАМИЧЕСКИЕ РАЗМЕРЫ ПОСТОВ === */
+
+/* Маленькие посты (0-50 pts) */
+.post-card.size-small {
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+.post-card.size-small h3 {
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.post-card.size-small .score-text {
+  font-size: 0.7rem;
+}
+
+/* Обычные посты (50-150 pts) */
+.post-card.size-normal {
+  padding: 18px 20px;
+  font-size: 0.9rem;
+  margin-bottom: 18px;
+}
+
+.post-card.size-normal h3 {
+  font-size: 1rem;
+}
+
+.post-card.size-normal .score-text {
+  font-size: 0.85rem;
+}
+
+/* Средние посты (150-300 pts) */
+.post-card.size-medium {
+  padding: 24px;
+  font-size: 1rem;
+  margin-bottom: 24px;
+  transform: scale(1.05);
+}
+
+.post-card.size-medium h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.post-card.size-medium .score-text {
+  font-size: 0.95rem;
+}
+
+/* Большие посты (300-500 pts) */
+.post-card.size-large {
+  padding: 32px;
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+  transform: scale(1.15);
+  font-weight: 600;
+}
+
+.post-card.size-large h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.post-card.size-large .score-text {
+  font-size: 1.1rem;
+}
+
+/* ОГРОМНЫЕ VIRAL посты (500+ pts) */
+.post-card.size-xl {
+  padding: 40px;
+  font-size: 1.3rem;
+  margin-bottom: 40px;
+  transform: scale(1.25);
+  font-weight: 700;
+}
+
+.post-card.size-xl h3 {
+  font-size: 2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.post-card.size-xl .score-text {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+
+
 .post-card {
   background: var(--card-bg);
   backdrop-filter: blur(10px);

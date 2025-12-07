@@ -53,6 +53,7 @@ func (h *WsHandler) HandleConnection(c *gin.Context) {
 	}
 }
 
+// GET /ws
 func (h *WsHandler) handleMessage(msg []byte) {
 	var event struct {
 		Action string `json:"action"` // "scream_support"

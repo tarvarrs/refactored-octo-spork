@@ -37,28 +37,58 @@ func Connect() *gorm.DB {
 	return db
 }
 
-
 func Seed(db *gorm.DB) {
-    var count int64
-    db.Model(&models.User{}).Count(&count)
-    if count > 0 {
-        log.Println("Database already seeded.")
-        return
-    }
+	var count int64
+	db.Model(&models.User{}).Count(&count)
+	if count > 0 {
+		log.Println("Database already seeded")
+		return
+	}
 
-    log.Println("Seeding initial data...")
-    
-    admin := models.User{Username: "ADMIN", TotalScreams: 999}
-    user1 := models.User{Username: "ALICE", TotalScreams: 50}
-    db.Create(&admin)
-    db.Create(&user1)
+	log.Println("Seeding initial data...")
 
-    posts := []models.Post{
-        {Content: "ПОЧЕМУ ДОКЕР НЕ ЗАПУСКАЕТСЯ?!", InitialVolume: 100, SupportScore: 5000, MaxScreamVolume: 110, UserID: admin.ID},
-        {Content: "Кофе остыл...", InitialVolume: 20, SupportScore: 10, MaxScreamVolume: 20, UserID: user1.ID},
-        {Content: "Хакатон — это весело", InitialVolume: 80, SupportScore: 300, MaxScreamVolume: 85, UserID: admin.ID},
-    }
-    db.Create(&posts)
-    
-    log.Println("Seeding complete.")
+	admin := models.User{Username: "ADMIN", TotalScreams: 999}
+	user1 := models.User{Username: "ALICE", TotalScreams: 50}
+
+	db.FirstOrCreate(&admin, models.User{Username: "ADMIN"})
+	db.FirstOrCreate(&user1, models.User{Username: "ALICE"})
+
+	posts := []models.Post{
+		{
+			Title:           "CSS",
+			Description:     "Я ПРОСТО ХОТЕЛ ВЫРОВНЯТЬ DIV ПО ЦЕНТРУ!!! ПОЧЕМУ ОН УЕХАЛ В ДРУГОЙ КОНЕЦ ВСЕЛЕННОЙ?!",
+			InitialVolume:   110,
+			SupportScore:    8500,
+			MaxScreamVolume: 120,
+			UserID:          admin.ID,
+		},
+		{
+			Title:           "Наушники",
+			Description:     "Опять зацепился проводом за ручку двери и вырвал их из ушей. Вместе с душой.",
+			InitialVolume:   80,
+			SupportScore:    1200,
+			MaxScreamVolume: 90,
+			UserID:          user1.ID,
+		},
+		{
+			Title:           "Встреча",
+			Description:     "Эта часовая встреча могла бы быть ОДНИМ сообщением в чате.",
+			InitialVolume:   70,
+			SupportScore:    450,
+			MaxScreamVolume: 75,
+			UserID:          admin.ID,
+		},
+		{
+			Title:           "Код",
+			Description:     "Работало на моей машине...",
+			InitialVolume:   50,
+			SupportScore:    2000,
+			MaxScreamVolume: 95,
+			UserID:          user1.ID,
+		},
+	}
+
+	db.Create(&posts)
+
+	log.Println("Seeding complete.")
 }

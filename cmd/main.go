@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
 	"oralo/internal/database"
@@ -12,7 +12,7 @@ import (
 	"oralo/internal/repository"
 	"oralo/internal/usecase/post"
 	"oralo/internal/usecase/user"
-	
+
 	"oralo/internal/handlers"
 	"oralo/internal/handlers/websocket"
 )
@@ -25,13 +25,13 @@ func main() {
 	db := database.Connect()
 
 	db.AutoMigrate(&models.Post{}, &models.User{})
-	 database.Seed(db) 
+	database.Seed(db)
 
 	postRepo := repo.NewPostRepo(db)
 	userRepo := repo.NewUserRepo(db)
 
 	jwtSecret := "secret"
-	
+
 	postUC := post.NewUsecase(postRepo)
 	userUC := user.NewUsecase(userRepo, jwtSecret)
 

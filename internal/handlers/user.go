@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"net/http"
-	"oralo/internal/usecase" 
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"oralo/internal/usecase"
 )
 
 type UserHandler struct {
-	uc usecase.UserUseCase 
+	uc usecase.UserUseCase
 }
 
 func NewUserHandler(uc usecase.UserUseCase) *UserHandler {

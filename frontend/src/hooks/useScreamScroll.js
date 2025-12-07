@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export const useScreamScroll = (volume, isListening, threshold = 25, speedMultiplier = 0.5) => {
+export const useScreamScroll = (volume, isListening, threshold = 100, speedMultiplier = 0.5) => {
   useEffect(() => {
     if (!isListening) return;
 

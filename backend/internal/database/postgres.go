@@ -8,6 +8,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"oralo/internal/models"
+	"rand"
 )
 
 func Connect() *gorm.DB {
@@ -36,7 +37,6 @@ func Connect() *gorm.DB {
 	log.Println("Database connected successfully")
 	return db
 }
-
 func Seed(db *gorm.DB) {
 	var postCount int64
 	db.Model(&models.Post{}).Count(&postCount)
@@ -47,85 +47,87 @@ func Seed(db *gorm.DB) {
 
 	log.Println("Seeding initial data...")
 
-	admin := models.User{Username: "ADMIN", TotalScreams: 999}
-	user1 := models.User{Username: "ANNA_K", TotalScreams: 50}
-	user2 := models.User{Username: "IVAN_TAXI", TotalScreams: 1200}
-	user3 := models.User{Username: "STUDENT_MAX", TotalScreams: 300}
-
-	users := []*models.User{&admin, &user1, &user2, &user3}
-	for _, u := range users {
-		db.FirstOrCreate(u, models.User{Username: u.Username})
-	}
-	// Обновляем ID
-	for _, u := range users {
-		db.Where("username = ?", u.Username).First(u)
+	// Создаем юзеров
+	users := []models.User{
+		{Username: "ADMIN", TotalScreams: 9999},
+		{Username: "AngryCitizen", TotalScreams: 500},
+		{Username: "QuietMouse", TotalScreams: 50},
+		{Username: "CatLover", TotalScreams: 1000},
+		{Username: "Student", TotalScreams: 200},
 	}
 
-	posts := []models.Post{
-		{
-			Title:           "СОСЕД С ДРЕЛЬЮ",
-			Description:     "Суббота. 8 утра. ВЖЖЖЖЖЖЖЖЖЖЖЖ! Такое чувство, что он сверлит не стену, а мой мозг. Прямо в гипоталамус.",
-			InitialVolume:   115,
-			SupportScore:    15000,
-			MaxScreamVolume: 130,
-			UserID:          user1.ID,
-		},
-		{
-			Title:           "Маршрутка",
-			Description:     "Водитель курит, шансон орет, окно не открывается, а печка работает на полную. На улице +30. Я еду в ад.",
-			InitialVolume:   85,
-			SupportScore:    4500,
-			MaxScreamVolume: 95,
-			UserID:          user3.ID,
-		},
-		{
-			Title:           "Мизинец",
-			Description:     "Я ударился мизинцем об ножку дивана. Я видел звезды. Я видел своих предков. Я познал боль вселенной.",
-			InitialVolume:   120,
-			SupportScore:    9999,
-			MaxScreamVolume: 120,
-			UserID:          user2.ID,
-		},
-		{
-			Title:           "Поликлиника",
-			Description:     "'Мне только спросить!' — сказала бабушка и зашла на 40 минут. А у меня талон на 14:00, сейчас 16:30!",
-			InitialVolume:   90,
-			SupportScore:    7200,
-			MaxScreamVolume: 110,
-			UserID:          user1.ID,
-		},
-		{
-			Title:           "Цены на яйца",
-			Description:     "Вы видели ценник в магазине?! Это яйца Фаберже или куриные?! Скоро омлет станет блюдом для миллионеров.",
-			InitialVolume:   70,
-			SupportScore:    3000,
-			MaxScreamVolume: 85,
-			UserID:          admin.ID,
-		},
-		{
-			Title:           "Голосовые",
-			Description:     "Человек записал голосовое на 4 минуты. В нем он просто молчит и дышит 3 минуты. ПОЧЕМУ НЕЛЬЗЯ НАПИСАТЬ ТЕКСТОМ?!",
-			InitialVolume:   100,
-			SupportScore:    6000,
-			MaxScreamVolume: 115,
-			UserID:          user3.ID,
-		},
-		{
-			Title:           "Дождь",
-			Description:     "Помыл машину. Выехал с мойки. Через 5 минут пошел дождь. Единственное облако на всем небе, и оно надо мной.",
-			InitialVolume:   80,
-			SupportScore:    1200,
-			MaxScreamVolume: 90,
-			UserID:          user2.ID,
-		},
-		{
-			Title:           "Пароль",
-			Description:     "Придумайте пароль. 'Пароль слишком простой'. 'Пароль должен содержать иероглиф, кровь дракона и знак зодиака'. Ввел старый. 'НОВЫЙ ПАРОЛЬ НЕ МОЖЕТ СОВПАДАТЬ СО СТАРЫМ'!!!",
-			InitialVolume:   110,
-			SupportScore:    8000,
-			MaxScreamVolume: 125,
-			UserID:          user1.ID,
-		},
+	var userIDs []uint
+	for _, u := range users {
+		if err := db.FirstOrCreate(&u, models.User{Username: u.Username}).Error; err != nil {
+			log.Printf("Error creating user %s: %v", u.Username, err)
+		} else {
+			var existingUser models.User
+			db.Where("username = ?", u.Username).First(&existingUser)
+			userIDs = append(userIDs, existingUser.ID)
+		}
+	}
+
+	// Функция для рандомного юзера
+	getRandomUserID := func() uint {
+		if len(userIDs) == 0 { return 1 }
+		return userIDs[rand.Intn(len(userIDs))]
+	}
+
+	// ДАННЫЕ С РАЗНЫМИ HP (SupportScore) ОТ 0 ДО 15000
+	postsData := []struct {
+		Title       string
+		Description string
+		Volume      int
+		HP          int // SupportScore
+	}{
+		// --- 0-100 HP (Никому не интересно) ---
+		{Title: "забыл имя собеседника...", Description: "Неловкая пауза затянулась.", Volume: 24, HP: 0},
+		{Title: "я же просил без лука...", Description: "Внимательность повара оставляет желать лучшего.", Volume: 10, HP: 10},
+		{Title: "кто оставил пустую коробку?", Description: "Молоко испарилось, коробка осталась.", Volume: 17, HP: 15},
+		{Title: "опять дождь, а я без зонта", Description: "Прогноз погоды опять обманул.", Volume: 23, HP: 25},
+		{Title: "Я просто шепнул...", Description: "Но получилось как всегда громко.", Volume: 10, HP: 45},
+		{Title: "НОСОК ИСЧЕЗ В СТИРАЛКЕ", Description: "Портал в другое измерение снова открыт.", Volume: 61, HP: 70},
+		{Title: "КТО БРАЛ МОИ ТАПОЧКИ?!", Description: "Расследование пропажи века.", Volume: 96, HP: 85},
+		{Title: "акция закончилась вчера...", Description: "Боль упущенной выгоды.", Volume: 20, HP: 95},
+		{Title: "ПЕЛЬМЕНИ СЛИПЛИСЬ", Description: "Кулинарная трагедия на кухне.", Volume: 93, HP: 99},
+
+		// --- 100-500 HP (Норм тема) ---
+		{Title: "забыл пакет дома", Description: "Стою на кассе и чувствую себя неловко.", Volume: 68, HP: 105},
+		{Title: "почему никто не лайкает кота?", Description: "Он же такой милый, посмотрите!", Volume: 38, HP: 120},
+		{Title: "СУП УБЕЖАЛ НА ПЛИТУ", Description: "Запах гари как признак готового обеда.", Volume: 84, HP: 150},
+		{Title: "СНОВА ЗВОНЯТ МОШЕННИКИ", Description: "Разговор со службой безопасности банка.", Volume: 90, HP: 167},
+		{Title: "почему такси стоит как самолет?", Description: "Экономический анализ тарифов в час пик.", Volume: 57, HP: 250},
+		{Title: "ОТКУДА СТОЛЬКО ПЫЛИ", Description: "Я же убирался буквально вчера!", Volume: 81, HP: 270},
+		{Title: "ПИЦЦУ ПРИВЕЗЛИ ХОЛОДНУЮ", Description: "Сервис доставки подвел в самый голодный момент.", Volume: 94, HP: 300},
+		{Title: "ТИШИНА В БИБЛИОТЕКЕ!", Description: "Попытка нарушить правила читального зала.", Volume: 95, HP: 340},
+		{Title: "КТО ПРИДУМАЛ ЭТИ ПРОБКИ", Description: "Философские размышления за рулем.", Volume: 80, HP: 410},
+		{Title: "ОНА СКАЗАЛА 'ОЙ ВСЁ'", Description: "Анализ завершения спора.", Volume: 58, HP: 450},
+
+		// --- 500-1000 HP (Популярное) ---
+		{Title: "выходные быстро кончились", Description: "Только моргнул - и уже понедельник.", Volume: 24, HP: 550},
+		{Title: "ЗАРЯДКА 1% АААА", Description: "Хроники умирающего телефона.", Volume: 97, HP: 600},
+		{Title: "наступил коту на хвост", Description: "Прости меня, пушистый друг!!!", Volume: 82, HP: 750},
+		{Title: "СРОЧНЫЕ НОВОСТИ", Description: "Никто не слушает, но я продолжаю вещать.", Volume: 60, HP: 850},
+		{Title: "АВТОБУС УЕХАЛ ПЕРЕД НОСОМ", Description: "Драма в трех актах на остановке.", Volume: 97, HP: 910},
+		{Title: "СОСЕД С ДРЕЛЬЮ В ВОСКРЕСЕНЬЕ", Description: "Симфония ремонта в 8 утра.", Volume: 98, HP: 999},
+
+		// --- >1000 HP (ЛЕГЕНДАРНОЕ) ---
+		{Title: "УДАРИЛСЯ МИЗИНЦЕМ", Description: "Краткий пересказ боли и страданий.", Volume: 99, HP: 1000},
+		{Title: "Голосовые", Description: "4 минуты молчания в голосовом.", Volume: 100, HP: 6000},
+		{Title: "Поликлиника", Description: "'Мне только спросить!' на 40 минут.", Volume: 90, HP: 7200},
+		{Title: "СОСЕД С ДРЕЛЬЮ (V2)", Description: "Он начал сверлить другую стену.", Volume: 115, HP: 15000},
+	}
+
+	var posts []models.Post
+	for _, p := range postsData {
+		posts = append(posts, models.Post{
+			Title:           p.Title,
+			Description:     p.Description,
+			InitialVolume:   p.Volume,
+			SupportScore:    p.HP, // Вот тут разные значения!
+			MaxScreamVolume: p.Volume + 10,
+			UserID:          getRandomUserID(),
+		})
 	}
 
 	if err := db.Create(&posts).Error; err != nil {

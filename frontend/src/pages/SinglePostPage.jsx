@@ -46,14 +46,37 @@ export const SinglePostPage = ({ volume, isListening }) => {
   const isScreaming = volume > BOOST_THRESHOLD;
 
   return (
-    <div className="single-post-page" style={{ padding: 20, textAlign: 'center' }}>
-      <button onClick={() => navigate('/')}>← Назад в ленту</button>
+    <div className="single-post-page" style={{ 
+      paddingTop: '250px', 
+      padding: '250px 20px 20px 20px', 
+      textAlign: 'center',
+      maxWidth: '600px',
+      margin: '0 auto'
+    }}>
+      <button 
+        onClick={() => navigate('/')}
+        style={{
+          marginBottom: '30px',
+          padding: '10px 20px',
+          background: 'rgba(0, 0, 0, 0.3)',
+          border: '2px solid var(--neon-blue)',
+          color: 'var(--neon-blue)',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontFamily: 'Montserrat, sans-serif',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
+        }}
+      >
+        ← Назад в ленту
+      </button>
       
       <div style={{ marginTop: 50, transform: isScreaming ? 'scale(1.1)' : 'scale(1)', transition: '0.1s' }}>
         <PostCard 
-          title={post.content}
-          text="ОРИ НА МЕНЯ! ПОДДЕРЖИ МЕНЯ!"
-          score={localScore}
+          title={post.title || 'Без заголовка'}
+          text={post.description || 'ОРИ НА МЕНЯ! ПОДДЕРЖИ МЕНЯ!'}
+          score={post.support_score || localScore}
           isShaking={isScreaming} // Трясется, когда орешь
         />
       </div>

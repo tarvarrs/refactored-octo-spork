@@ -11,6 +11,11 @@
   overflow: hidden;
 }
 
+/* Когда слайдер активен - стикеры останавливаются */
+.floating-stickers-container.paused .floating-sticker {
+  animation-play-state: paused !important;
+}
+
 .floating-sticker {
   position: absolute;
   object-fit: contain;

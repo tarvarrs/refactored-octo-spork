@@ -63,12 +63,13 @@ function App() {
 
   return (
     <div className="App">
-      <FloatingStickers />
+      <FloatingStickers isPaused={isDragging} />
 
       <header className="sticky-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <h1>ORALO</h1>
+        <h1>ORALO</h1>
 
+        {/* Контейнер для кнопок справа */}
+        <div className="header-controls-right">
           {/* КНОПКА ВКЛЮЧЕНИЯ МИКРОФОНА */}
           <button 
             onClick={!isListening ? startCalibration : stopListening}
@@ -76,53 +77,48 @@ function App() {
           >
             {!isListening ? '🎙️ ВКЛ' : isCalibrating ? '🤫 ТССС...' : '🛑 СТОП'}
           </button>
+
+          {/* Кнопка создания поста */}
+          <button 
+            className="create-btn"
+            onClick={() => setIsFormOpen(!isFormOpen)}
+            disabled={true}
+          >
+            {isFormOpen ? '✖' : '➕ ОРАТЬ'}
+          </button>
         </div>
 
         {/* Индикатор громкости (Реальный!) */}
         <div style={{ flex: 1, margin: '0 20px', maxWidth: '300px' }}>
            <VolumeMeter volume={volume} />
         </div>
-
-        {/* СТРЕСС-СЛАЙДЕР (НОВОЕ) */}
-        <div className="stress-slider-container">
-          <label className="stress-label">
-            ПОДЕРГАЙ ЧТОБЫ СНЯТЬ НАПРЯЖЕНИЕ
-          </label>
-          <div className="stress-slider-wrapper">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={stressLevel}
-              onChange={(e) => setStressLevel(e.target.value)}
-              onMouseDown={() => setIsDragging(true)}
-              onMouseUp={() => setIsDragging(false)}
-              onTouchStart={() => setIsDragging(true)}
-              onTouchEnd={() => setIsDragging(false)}
-              className={`stress-slider ${isDragging ? 'dragging' : ''}`}
-              style={{
-                '--slider-value': stressLevel,
-                '--slider-color': stressLevel > 70 ? 'var(--scream-color)' : 
-                                  stressLevel > 30 ? '#ff8800' : 'var(--neon-blue)'
-              }}
-            />
-            <div className="stress-level-indicator">
-              {stressLevel < 30 ? '😌 СПОКОЙНО' : 
-               stressLevel < 70 ? '😐 НОРМ' : 
-               '😡 ААААА'}
-            </div>
-          </div>
-        </div>
-
-        {/* Кнопка создания поста */}
-        <button 
-          className="create-btn"
-          onClick={() => setIsFormOpen(!isFormOpen)}
-          disabled={true}
-        >
-          {isFormOpen ? '✖' : '➕ ОРАТЬ'}
-        </button>
       </header>
+
+      {/* СТРЕСС-СЛАЙДЕР - ТЕПЕРЬ СПРАВА СБОКУ */}
+      <div className="stress-slider-sidebar">
+        <label className="stress-label">
+          ПОДЕРГАЙ<br/>ЧТОБЫ СНЯТЬ<br/>НАПРЯЖЕНИЕ
+        </label>
+        <div className="stress-slider-wrapper">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={stressLevel}
+            onChange={(e) => setStressLevel(e.target.value)}
+            onMouseDown={() => setIsDragging(true)}
+            onMouseUp={() => setIsDragging(false)}
+            onTouchStart={() => setIsDragging(true)}
+            onTouchEnd={() => setIsDragging(false)}
+            className={`stress-slider ${isDragging ? 'dragging' : ''}`}
+            style={{
+              '--slider-value': stressLevel,
+              '--slider-color': stressLevel > 70 ? 'var(--scream-color)' : 
+                                stressLevel > 30 ? '#ff8800' : 'var(--neon-blue)'
+            }}
+          />
+        </div>
+      </div>
 
       {/* ОШИБКИ */}
       {error && <div className="error-banner">{error}</div>}
@@ -165,10 +161,17 @@ function App() {
           />
         ))}
 
-        {/* КОНЕЦ ЛЕНТЫ: Новая надпись и стиль */}
+        {/* КОНЕЦ ЛЕНТЫ: С бегущей строкой */}
         {posts.length > 0 && (
           <div className="end-of-feed">
-            ☠️ ВЫ ДОСТИГЛИ ДНА
+            <div className="marquee-container">
+              <div className="marquee-content">
+                ААААААААА ААААААААА ААААААААА ААААААААА ААААААААА ААААААААА
+              </div>
+            </div>
+            <div className="end-text">
+              ☠️ ВЫ ДОСТИГЛИ ДНА
+            </div>
           </div>
         )}
       </main>

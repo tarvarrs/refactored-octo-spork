@@ -34,7 +34,8 @@ const PostCard = ({ title, text, score = 0 }) => {
         </span>
       </div>
 
-      <h3>{text}</h3>
+      {title && <h3>{title}</h3>}
+      {text && <p style={{ marginTop: title ? '8px' : '0', opacity: 0.9 }}>{text}</p>}
 
       {/* Прогресс бар */}
       <div className="hype-bar-container">

@@ -1,27 +1,46 @@
 import React from 'react';
-import './PostCard.css'; // Сейчас создадим стили
+import './PostCard.css';
 
-const PostCard = ({ title, text, volumeLevel = 0, hp = 100 }) => {
-  // Логика стилей: чем громче крик (volumeLevel), тем крупнее текст (масштаб до 1.1x)
-  const dynamicStyle = {
-    transform: `scale(${1 + volumeLevel / 500})`, // Легкое увеличение
-    fontWeight: volumeLevel > 50 ? 'bold' : 'normal',
-  };
+const PostCard = ({ title, text, score = 0 }) => {
+  const isViral = score >= 500;
+  const isTrending = score >= 100 && score < 500;
+
+  // Формируем классы
+  let cardClass = 'post-card';
+  if (isViral) cardClass += ' card-viral';
+  else if (isTrending) cardClass += ' card-trending';
+
+  // Цвет темы для карточки
+  const themeColor = isViral ? 'var(--scream-color)' : isTrending ? 'var(--chill-color)' : '#555';
 
   return (
-    <div className={`post-card ${hp < 50 ? 'shaking' : ''}`}>
+    <div className={cardClass}>
       <div className="card-header">
-        <span className="hp-badge">HP: {hp}%</span>
+        <span 
+          className="score-badge"
+          style={{ 
+            color: isViral ? '#fff' : themeColor,
+            background: isViral ? themeColor : 'rgba(0,0,0,0.3)'
+          }}
+        >
+          {isViral ? '🔥 VIRAL' : isTrending ? '⚡ TRENDING' : '💤 NORMAL'}
+        </span>
+        <span className="score-text">{score} PTS</span>
       </div>
-      <div className="card-content" style={dynamicStyle}>
+      
+      <div className="card-content">
         <h3>{title}</h3>
         <p>{text}</p>
       </div>
-      {/* Визуальная полоска жизни поста */}
-      <div className="hp-bar">
+
+      <div className="hype-bar-container">
         <div 
-          className="hp-fill" 
-          style={{ width: `${hp}%`, backgroundColor: hp < 30 ? 'red' : '#4caf50' }} 
+          className="hype-bar-fill" 
+          style={{ 
+            width: `${Math.min(score / 10, 100)}%`, 
+            backgroundColor: themeColor,
+            boxShadow: `0 0 10px ${themeColor}`
+          }} 
         />
       </div>
     </div>

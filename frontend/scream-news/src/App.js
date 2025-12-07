@@ -1,51 +1,66 @@
 import React, { useState } from 'react';
 import './App.css';
-// Импортируем компоненты из новой папки
 import PostCard from './components/PostCard';
 import VolumeMeter from './components/VolumeMeter';
 
-function App() {
-  // --- MOCK DATA (Имитация логики для верстки) ---
-  const [mockVolume, setMockVolume] = useState(30); // Фейковая громкость
-  
-  const mockPosts = [
-    { id: 1, title: "Доброе утро", text: "Это обычный пост, с ним всё хорошо.", hp: 100 },
-    { id: 2, title: "ПОСТ ТРЯСЕТСЯ!", text: "У этого поста мало HP и он получает урон!", hp: 20 },
-    { id: 3, title: "Скролль вниз", text: "А тут просто текст для проверки.", hp: 80 },
+const generateMockPosts = () => {
+  const titles = [
+    "КОТЫ ЗАХВАТИЛИ ВЛАСТЬ!", "Почему молчание убивает?", "БИТКОИН УПАЛ ОТ КРИКА", 
+    "Соседи вызвали полицию", "Ученые: ор продлевает жизнь", "Громкость 1000%!",
+    "Кто украл твой голос?", "Сенсация: тишина запрещена", "Как правильно орать?",
+    "Микрофон плавится"
   ];
-  // -----------------------------------------------
+  
+  return Array.from({ length: 15 }).map((_, i) => {
+    // Делаем так, чтобы первый пост был слабым, а последние - мощными
+    const baseScore = i * 80; 
+    const randomBoost = Math.floor(Math.random() * 100);
+    
+    return {
+      id: i + 1,
+      title: titles[i % titles.length] + ` #${i+1}`,
+      text: "Поддержите этот пост своим голосом! Чем громче вы кричите, тем выше он поднимается.",
+      score: baseScore + randomBoost, 
+    };
+  });
+};
+
+function App() {
+  const [mockVolume, setMockVolume] = useState(0); 
+  const [posts] = useState(generateMockPosts());
 
   return (
     <div className="App">
-      {/* Хедер с управлением */}
       <header className="sticky-header">
-        <h1>🗣 ScreamNews UI</h1>
+        {/* 🔥 ВОТ ЗДЕСЬ ИЗМЕНЕНИЕ: */}
+        <h1>ORALO</h1>
         
-        {/* ВРЕМЕННЫЙ ползунок для теста верстки */}
         <div className="dev-tools">
-          <p>🔧 Тест громкости:</p>
+          <p>🚀 Скорость: {mockVolume}%</p>
           <input 
             type="range" min="0" max="100" 
             value={mockVolume} 
-            onChange={(e) => setMockVolume(Number(e.target.value))} 
+            onChange={(e) => setMockVolume(Number(e.target.value))}
+            style={{ accentColor: 'var(--scream-color)', cursor: 'pointer' }}
           />
         </div>
 
         <VolumeMeter volume={mockVolume} />
       </header>
 
-      {/* Лента постов */}
       <main className="feed">
-        {mockPosts.map(post => (
+        {posts.map(post => (
           <PostCard 
             key={post.id}
             title={post.title}
             text={post.text}
-            hp={post.hp}
-            // Трясем пост, если громко и мало HP
-            isShaking={mockVolume > 50 && post.hp < 50} 
+            score={post.score}
           />
         ))}
+        
+        <div style={{ textAlign: 'center', color: '#666', padding: '30px' }}>
+          📢 КОНЕЦ ЭФИРА
+        </div>
       </main>
     </div>
   );

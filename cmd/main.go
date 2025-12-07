@@ -12,7 +12,7 @@ import (
 	"oralo/internal/repository"
 	"oralo/internal/usecase/post"
 	"oralo/internal/usecase/user"
-
+	"os"
 	"oralo/internal/handlers"
 	"oralo/internal/handlers/websocket"
 )
@@ -30,7 +30,10 @@ func main() {
 	postRepo := repo.NewPostRepo(db)
 	userRepo := repo.NewUserRepo(db)
 
-	jwtSecret := "secret"
+	jwtSecret := os.Getenv("JWT_SECRET")
+    if jwtSecret == "" {
+        jwtSecret = "secret"
+    }
 
 	postUC := post.NewUsecase(postRepo)
 	userUC := user.NewUsecase(userRepo, jwtSecret)
@@ -46,11 +49,19 @@ func main() {
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	r.Use(cors.New(config))
 
-	r.POST("/posts", postH.CreatePost)
-	r.GET("/posts", postH.GetFeed)
-	r.POST("/auth/login", userH.Login)
-	r.GET("/stats/leaderboard", userH.GetLeaderboard)
-	r.GET("/ws", wsH.HandleConnection)
+    public := r.Group("/")
+    {
+        public.GET("/posts", postH.GetFeed)
+        public.POST("/auth/login", userH.Login)
+        public.GET("/stats/leaderboard", userH.GetLeaderboard) 
+    }
 
+    protected := r.Group("/")
+    protected.Use(handlers.AuthMiddleware())
+    {
+        protected.POST("/posts", postH.CreatePost) 
+    }
+
+	r.GET("/ws", wsH.HandleConnection)
 	r.Run(":8084")
 }

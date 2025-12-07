@@ -6,8 +6,7 @@ import { api } from './api/client';
 import './App.css';
 import PostCard from './components/PostCard';
 import VolumeMeter from './components/VolumeMeter';
-import FloatingStickers from './components/FloatingStickers'; // ← ДОБАВЬ ЭТУ СТРОКУ
-
+import FloatingStickers from './components/FloatingStickers';
 
 function App() {
   // --- 1. ЛОГИКА АУДИО И СКРОЛЛА ---
@@ -22,11 +21,15 @@ function App() {
 
   // --- 2. ЛОГИКА ЗАПИСИ ПОСТА (НОВОЕ) ---
   const { isRecording, recordingTime, startRecording, stopRecording } = useScreamRecorder(volume);
-  
+
+  // --- 3. СТРЕСС-СЛАЙДЕР (НОВОЕ) ---
+  const [stressLevel, setStressLevel] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+
   // Скроллим только если слушаем, не калибруемся и НЕ записываем пост прямо сейчас
   useScreamScroll(volume, isListening && !isCalibrating && !isRecording, 5);
 
-  // --- 3. ДАННЫЕ И ФОРМЫ ---
+  // --- 4. ДАННЫЕ И ФОРМЫ ---
   const [posts, setPosts] = useState([]);
   const [draftText, setDraftText] = useState(""); // Текст нового поста (будет Title)
   const [isFormOpen, setIsFormOpen] = useState(false); // Открыть/закрыть форму
@@ -45,13 +48,13 @@ function App() {
   // Обработчик создания поста
   const handlePostCreation = async () => {
     if (!draftText.trim()) return alert("Напиши хоть слово перед тем как орать!");
-    
+
     // Получаем громкость крика
     const finalVolume = stopRecording();
-    
+
     // Отправляем: draftText -> title, description генерируется в client.js или можно передать пустой
     await api.createPost(draftText, finalVolume);
-    
+
     // Сброс UI
     setDraftText("");
     setIsFormOpen(false);
@@ -61,10 +64,11 @@ function App() {
   return (
     <div className="App">
       <FloatingStickers />
+
       <header className="sticky-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <h1>ORALO</h1>
-          
+
           {/* КНОПКА ВКЛЮЧЕНИЯ МИКРОФОНА */}
           <button 
             onClick={!isListening ? startCalibration : stopListening}
@@ -79,11 +83,42 @@ function App() {
            <VolumeMeter volume={volume} />
         </div>
 
+        {/* СТРЕСС-СЛАЙДЕР (НОВОЕ) */}
+        <div className="stress-slider-container">
+          <label className="stress-label">
+            ПОДЕРГАЙ ЧТОБЫ СНЯТЬ НАПРЯЖЕНИЕ
+          </label>
+          <div className="stress-slider-wrapper">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={stressLevel}
+              onChange={(e) => setStressLevel(e.target.value)}
+              onMouseDown={() => setIsDragging(true)}
+              onMouseUp={() => setIsDragging(false)}
+              onTouchStart={() => setIsDragging(true)}
+              onTouchEnd={() => setIsDragging(false)}
+              className={`stress-slider ${isDragging ? 'dragging' : ''}`}
+              style={{
+                '--slider-value': stressLevel,
+                '--slider-color': stressLevel > 70 ? 'var(--scream-color)' : 
+                                  stressLevel > 30 ? '#ff8800' : 'var(--neon-blue)'
+              }}
+            />
+            <div className="stress-level-indicator">
+              {stressLevel < 30 ? '😌 СПОКОЙНО' : 
+               stressLevel < 70 ? '😐 НОРМ' : 
+               '😡 ААААА'}
+            </div>
+          </div>
+        </div>
+
         {/* Кнопка создания поста */}
         <button 
           className="create-btn"
           onClick={() => setIsFormOpen(!isFormOpen)}
-          disabled={true} /* <--- ИЗМЕНЕНО: Кнопка всегда неактивна */
+          disabled={true}
         >
           {isFormOpen ? '✖' : '➕ ОРАТЬ'}
         </button>
@@ -112,7 +147,7 @@ function App() {
         </div>
       )}
 
-<main className="feed">
+      <main className="feed">
         {/* ПУСТОЕ СОСТОЯНИЕ: Стилизованная плашка */}
         {posts.length === 0 && !isListening && (
            <div className="empty-state">
@@ -129,7 +164,7 @@ function App() {
             volumeLevel={post.volumeLevel}
           />
         ))}
-        
+
         {/* КОНЕЦ ЛЕНТЫ: Новая надпись и стиль */}
         {posts.length > 0 && (
           <div className="end-of-feed">

@@ -1,0 +1,154 @@
+openapi: 3.0.3
+info:
+  title: SCREAMER API
+  description: API для самой громкой социальной сети.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Local Dev Server
+
+components:
+  schemas:
+    # --- МОДЕЛИ ДАННЫХ ---
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+          description: Уникальный ID поста
+        content:
+          type: string
+          example: "ПОЧЕМУ КОФЕ ТАКОЙ ГОРЯЧИЙ?!"
+          description: Текст поста
+        initial_volume:
+          type: integer
+          minimum: 0
+          maximum: 120
+          example: 95
+          description: Громкость (dB) при создании. Влияет на размер шрифта.
+        current_hp:
+          type: integer
+          example: 850
+          description: Текущее здоровье поста. Начальное = 1000.
+        is_destroyed:
+          type: boolean
+          example: false
+          description: Если true, пост должен визуально "взорваться" и исчезнуть.
+        created_at:
+          type: string
+          format: date-time
+    
+    CreatePostRequest:
+      type: object
+      required:
+        - content
+        - initial_volume
+      properties:
+        content:
+          type: string
+          minLength: 1
+          example: "Всем привет, я только проснулся"
+        initial_volume:
+          type: integer
+          minimum: 0
+          maximum: 120
+          description: Средняя громкость голоса во время записи
+          example: 45
+
+    ScreamDamageEvent:
+      type: object
+      description: Объект, который фронт шлет в WebSocket, когда юзер орет
+      properties:
+        action:
+          type: string
+          enum: [scream_damage]
+        post_id:
+          type: integer
+        damage:
+          type: integer
+          description: Рассчитывается как (CurrentVolume - Threshold) / Coeff
+
+    HealthUpdateEvent:
+      type: object
+      description: Объект, который сервер шлет всем клиентам через WebSocket
+      properties:
+        event:
+          type: string
+          enum: [hp_update]
+        post_id:
+          type: integer
+        new_hp:
+          type: integer
+        is_destroyed:
+          type: boolean
+
+  # --- ОПИСАНИЕ ПУТЕЙ ---
+paths:
+  /posts:
+    get:
+      summary: Получить ленту постов
+      description: Возвращает список "живых" постов (не уничтоженных). Сортировка - новые сверху.
+      responses:
+        '200':
+          description: Успешный список
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+    post:
+      summary: Создать новый пост (Scream-to-Post)
+      description: Сохраняет пост с громкостью.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRequest'
+      responses:
+        '201':
+          description: Пост создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  status:
+                    type: string
+                    example: "created"
+
+  /stats/leaderboard:
+    get:
+      summary: Получить топ крикунов (Phase 2)
+      description: Топ-10 юзеров по максимальной громкости.
+      responses:
+        '200':
+          description: Лидерборд
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                      example: "LOUD_BOY_99"
+                    max_volume:
+                      type: integer
+                      example: 110
+
+  /ws:
+    get:
+      summary: WebSocket Connection
+      description: >
+        Единая точка входа для Realtime.
+        \n**Client -> Server:** Отправляет `ScreamDamageEvent` (когда орем).
+        \n**Server -> Client:** Рассылает `HealthUpdateEvent` (когда урон прошел).
+      responses:
+        '101':
+          description: Switching Protocols to WebSocket

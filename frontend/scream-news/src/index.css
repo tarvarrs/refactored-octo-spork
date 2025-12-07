@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@800;900&display=swap');
+
+:root {
+  --bg-dark: #121214;
+  --card-bg: rgba(30, 30, 36, 0.7);
+  --text-main: #FFFFFF;
+  --text-muted: #A0A0A5;
+  
+  /* NEON PALETTE */
+  --scream-color: #FF2E63; /* Малиновый неон (VIRAL) */
+  --chill-color: #08D9D6;  /* Циан (TRENDING) */
+  --normal-color: #252A34; /* Серый (NORMAL) */
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }

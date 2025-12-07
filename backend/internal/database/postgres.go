@@ -38,10 +38,10 @@ func Connect() *gorm.DB {
 }
 
 func Seed(db *gorm.DB) {
-	var count int64
-	db.Model(&models.User{}).Count(&count)
-	if count > 0 {
-		log.Println("Database already seeded")
+	var postCount int64
+	db.Model(&models.Post{}).Count(&postCount)
+	if postCount > 0 {
+		log.Println("Database already seeded with posts")
 		return
 	}
 
@@ -50,8 +50,16 @@ func Seed(db *gorm.DB) {
 	admin := models.User{Username: "ADMIN", TotalScreams: 999}
 	user1 := models.User{Username: "ALICE", TotalScreams: 50}
 
-	db.FirstOrCreate(&admin, models.User{Username: "ADMIN"})
-	db.FirstOrCreate(&user1, models.User{Username: "ALICE"})
+	if err := db.FirstOrCreate(&admin, models.User{Username: "ADMIN"}).Error; err != nil {
+		log.Printf("Error creating admin user: %v", err)
+	}
+	if err := db.FirstOrCreate(&user1, models.User{Username: "ALICE"}).Error; err != nil {
+		log.Printf("Error creating user1: %v", err)
+	}
+
+	// Перезагружаем пользователей, чтобы получить их ID
+	db.Where("username = ?", "ADMIN").First(&admin)
+	db.Where("username = ?", "ALICE").First(&user1)
 
 	posts := []models.Post{
 		{
@@ -88,7 +96,9 @@ func Seed(db *gorm.DB) {
 		},
 	}
 
-	db.Create(&posts)
-
-	log.Println("Seeding complete.")
+	if err := db.Create(&posts).Error; err != nil {
+		log.Printf("Error creating posts: %v", err)
+	} else {
+		log.Printf("Seeding complete. Created %d posts", len(posts))
+	}
 }

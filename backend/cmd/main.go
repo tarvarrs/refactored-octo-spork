@@ -9,7 +9,7 @@ import (
 
 	"oralo/internal/database"
 	"oralo/internal/models"
-	"oralo/internal/repository"
+	repo "oralo/internal/repository"
 	"oralo/internal/usecase/post"
 	"oralo/internal/usecase/user"
 	"os"
@@ -63,5 +63,10 @@ func main() {
     }
 
 	r.GET("/ws", wsH.HandleConnection)
-	r.Run(":8084")
+	
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	r.Run(":" + port)
 }

@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # --- 1. БАЗА ДАННЫХ ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: oralo
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d oralo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # --- 2. BACKEND (GO) ---
+  backend:
+    build: 
+      context: ./backend  # <-- Указываем путь к папке бэка
+      dockerfile: Dockerfile
+    container_name: oralo-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: password
+      DB_NAME: oralo
+      JWT_SECRET: secret
+      PORT: 8080
+    ports:
+      - "8084:8080"  # API доступно на localhost:8084
+    restart: unless-stopped
+
+  # --- 3. FRONTEND (REACT) ---
+  frontend:
+    build: 
+      context: ./frontend            # Путь к папке с фронтендом (если docker-compose лежит в корне фронта)
+      dockerfile: Dockerfile
+    container_name: screamer-front
+    ports:
+      - "3000:80"            # Прокидываем 80 порт Nginx наружу на 3000
+    depends_on:
+      - backend              # Ждем запуска бэкенда (если он есть)
+    restart: unless-stopped
+
+
+volumes:
+  pgdata:

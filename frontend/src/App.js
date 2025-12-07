@@ -40,6 +40,21 @@ function App() {
     initAuth();
   }, []);
 
+  // Компонент FeedPage с нужными пропсами
+  const feedPageElement = (
+    <FeedPage
+      volume={volume}
+      isListening={isListening}
+      isCalibrating={isCalibrating}
+      isRecording={isRecording}
+      startRecording={startRecording}
+      stopRecording={stopRecording}
+      recordingTime={recordingTime}
+      isFormOpen={isFormOpen}
+      setIsFormOpen={setIsFormOpen}
+    />
+  );
+
   return (
     <div className="App">
       <header className="sticky-header">
@@ -72,23 +87,11 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={
-            <FeedPage
-              volume={volume}
-              isListening={isListening}
-              isCalibrating={isCalibrating}
-              
-              // Передаем всё что нужно для записи поста в FeedPage
-              isRecording={isRecording}
-              startRecording={startRecording} // <--- Нужно передать
-              stopRecording={stopRecording}   // <--- Нужно передать
-              recordingTime={recordingTime}   // <--- Нужно передать
-              
-              // Передаем состояние формы
-              isFormOpen={isFormOpen}
-              setIsFormOpen={setIsFormOpen}
-            />
-          }
+          element={feedPageElement}
+        />
+        <Route
+          path="/posts"
+          element={feedPageElement}
         />
         <Route
           path="/post/:id"

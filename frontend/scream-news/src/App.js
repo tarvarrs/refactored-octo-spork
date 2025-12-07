@@ -3,6 +3,10 @@ import { useAudioInput } from './hooks/useAudioInput';
 import { useScreamScroll } from './hooks/useScreamScroll';
 import { api } from './api/client';
 import ScreamScrollNews from './ScreamScrollNews'; 
+import './App.css';
+// Импортируем компоненты из новой папки
+import PostCard from './components/PostCard';
+import VolumeMeter from './components/VolumeMeter';
 
 function App() {
   const { 
@@ -22,42 +26,48 @@ function App() {
     };
     loadData();
   }, []);
+  // --- MOCK DATA (Имитация логики для верстки) ---
+  const [mockVolume, setMockVolume] = useState(30); // Фейковая громкость
+  
+  const mockPosts = [
+    { id: 1, title: "Доброе утро", text: "Это обычный пост, с ним всё хорошо.", hp: 100 },
+    { id: 2, title: "ПОСТ ТРЯСЕТСЯ!", text: "У этого поста мало HP и он получает урон!", hp: 20 },
+    { id: 3, title: "Скролль вниз", text: "А тут просто текст для проверки.", hp: 80 },
+  ];
+  // -----------------------------------------------
+
   return (
-    <div className="App" style={{ padding: 20 }}>
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, background: '#222', color: 'white', padding: 15, zIndex: 9999, display: 'flex', justifyContent: 'space-between' }}>
+    <div className="App">
+      {/* Хедер с управлением */}
+      <header className="sticky-header">
+        <h1>🗣 ScreamNews UI</h1>
         
-        <div>
-          {/* Логика кнопки меняется в зависимости от статуса */}
-          {!isListening ? (
-            <button onClick={startCalibration} style={{ padding: '10px 20px', background: '#0f0' }}>
-              НАЧАТЬ (Калибровка)
-            </button>
-          ) : isCalibrating ? (
-            <span style={{ color: 'yellow', fontWeight: 'bold' }}>🤫 ТССС! ИЗМЕРЯЕМ ТИШИНУ...</span>
-          ) : (
-            <button onClick={stopListening} style={{ padding: '10px 20px', background: 'red', color: 'white' }}>
-              СТОП
-            </button>
-          )}
+        {/* ВРЕМЕННЫЙ ползунок для теста верстки */}
+        <div className="dev-tools">
+          <p>🔧 Тест громкости:</p>
+          <input 
+            type="range" min="0" max="100" 
+            value={mockVolume} 
+            onChange={(e) => setMockVolume(Number(e.target.value))} 
+          />
         </div>
 
-        <div>Volume: {volume}%</div>
-      </div>
-      
-      {error && <div style={{ color: 'red', marginTop: 60 }}>{error}</div>}
+        <VolumeMeter volume={mockVolume} />
+      </header>
 
-      <div style={{ marginTop: 100 }}>
-        {posts.map(post => (
-           <div key={post.id} style={{ border: '1px solid #ccc', margin: '10px 0', padding: 20 }}>
-             <h3>{post.content}</h3>
-             <small>Громкость поста: {post.volumeLevel}</small>
-           </div>
+      {/* Лента постов */}
+      <main className="feed">
+        {mockPosts.map(post => (
+          <PostCard 
+            key={post.id}
+            title={post.title}
+            text={post.text}
+            hp={post.hp}
+            // Трясем пост, если громко и мало HP
+            isShaking={mockVolume > 50 && post.hp < 50} 
+          />
         ))}
-        {/* Добавим много текста чтобы было куда скроллить */}
-        {Array.from({length: 20}).map((_, i) => (
-            <div key={i} style={{height: 100, background: '#eee', margin: 10}}>Пустое место {i}</div>
-        ))}
-      </div>
+      </main>
     </div>
   );
 }
